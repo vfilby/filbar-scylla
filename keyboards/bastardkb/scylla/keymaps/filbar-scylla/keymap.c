@@ -173,6 +173,9 @@ static HSV _get_hsv_for_layer_index(uint8_t layer) {
     };
 }
 
+/* Layer effects that dynamically control LEDS on different layers to indicate which keys are available
+ *
+ */
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 
     const uint8_t layer = get_highest_layer(layer_state);
@@ -188,14 +191,12 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 
         uint8_t layer = get_highest_layer(layer_state);
 
-        for (uint8_t row = 0; row < MATRIX_ROWS; ++row) {
-            for (uint8_t col = 0; col < MATRIX_COLS; ++col) {
-                uint8_t index = g_led_config.matrix_co[row][col];
+        // for (uint8_t row = 0; row < MATRIX_ROWS; ++row) {
+        //     for (uint8_t col = 0; col < MATRIX_COLS; ++col) {
+        //         uint8_t index = g_led_config.matrix_co[row][col];
 
-                if (index >= led_min
-                    && index < led_max
-                    && index != NO_LED
-                ) {
+        for (int i = led_min; i <= led_max; i++) {
+                if (HAS_FLAGS(g_led_config.flags[i], LED_FLAG_UNDERGLOW)) {
                     if( keymap_key_to_keycode(layer, (keypos_t){col,row}) > KC_TRNS ) {
                         rgb_matrix_set_color(index, rgb.r, rgb.g, rgb.b);
                     } else {
@@ -204,6 +205,18 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
                 }
             }
         }
+                // if (index >= led_min
+                //     && index < led_max
+                //     && index != NO_LED
+                // ) {
+                //     if( keymap_key_to_keycode(layer, (keypos_t){col,row}) > KC_TRNS ) {
+                //         rgb_matrix_set_color(index, rgb.r, rgb.g, rgb.b);
+                //     } else {
+                //         rgb_matrix_set_color(index, off.r, off.g, off.b);
+                //     }
+                // }
+        //     }
+        // }
     }
     return false;
 }
