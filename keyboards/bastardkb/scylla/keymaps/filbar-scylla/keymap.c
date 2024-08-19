@@ -171,7 +171,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
          KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,       KC_NO, RGB_RMOD, RGB_HUD, KC_NO, KC_NO, KC_NO,
          KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,       KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
 
-                             KC_NO, KC_NO, KC_NO, 		QWERTY, COLEMAK, KC_NO,
+                             KC_NO, KC_NO, KC_NO, 		DF(_QWERTY), DF(_COLEMAK), KC_NO,
                                    KC_NO, KC_NO, 		KC_NO, KC_NO
      ),
 };
@@ -189,21 +189,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
          record->tap.interrupted,
          record->tap.count);
 #endif
-
-    switch (keycode) {
-        case COLEMAK:
-            if (record->event.pressed) {
-                layer_clear();
-                layer_on(_COLEMAK);
-            }
-            return false;
-        case QWERTY:
-            if (record->event.pressed) {
-                layer_clear();
-                layer_on(_QWERTY);
-            }
-            return false;
-    }
     return true;
 }
 
@@ -226,9 +211,9 @@ static HSV _get_hsv_for_layer_index(uint8_t layer) {
     };
 }
 
-
 /* Layer effects that dynamically control LEDS on different layers to indicate which keys are available
  *
+ * NOTE: Any changes to this function must be flashed to both halves.
  */
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 
@@ -263,7 +248,10 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     return false;
 }
 
-// Layer state indicator
+/* Sample indicator callback that changes the colour of all keys on a given layer
+ *
+ * NOTE: Any changes to this function must be flashed to both halves.
+ */
 // bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 //
 //     // Set underglow to a solid color for highest active layer apart from the base layer.
