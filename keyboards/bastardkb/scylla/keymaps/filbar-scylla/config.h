@@ -1,7 +1,7 @@
 /* Increase the layer count */
 
 #define DYNAMIC_KEYMAP_LAYER_COUNT 5
-
+#define SPLIT_LAYER_STATE_ENABLE
 
 /* RGB colour effects */
 
