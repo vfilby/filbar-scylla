@@ -54,7 +54,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
      * |LCTRL |   Z  |   X  |   C  |   V  |   B  |                    |   N  |   M  |   ,  |   .  |   /  |  \   |
      * `------------------------------------------------\      /------------------------------------------------'
-     *                             | CMD  |  SPC | RAISE|      |  NAV | ENT  | RGUI |
+     *                             | CMD  |  SPC | RAISE|      |  NAV | ENT  | CMD  |
      *                             `--------------------|      |--------------------'
      *                                    | OPT  | BKSP |      |  DEL | RALT |
      *                                    `-------------/      \-------------'
@@ -66,7 +66,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_LSFT, KC_A, KC_S, KC_D, KC_F, KC_G, 			          KC_H, KC_J, KC_K, KC_L, KC_SCLN, KC_QUOT,
         KC_LCTL, KC_Z, KC_X, KC_C, KC_V, KC_B, 			          KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH, KC_BSLS,
 
-                        KC_LGUI, KC_SPC, MO(_RAISE),    MO(_NAV), KC_ENT, KC_RGUI,
+                        KC_LGUI, KC_SPC, MO(_RAISE),    MO(_NAV), KC_ENT, KC_BSPC,
                                 KC_LOPT, KC_BSPC, 		        KC_DEL, KC_RALT
     ),
 
@@ -81,7 +81,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
      * |LCTRL |   Z  |   X  |   C  |   D  |   V  |                    |   K  |   H  |   ,  |   .  |   /  |   \  |
      * `------------------------------------------------\      /------------------------------------------------'
-     *                             | CMD  |  SPC |_RAISE|      | _NAV | ENT  | RGUI |
+     *                             | CMD  |  SPC |_RAISE|      | _NAV | ENT  | CMD  |
      *                             `--------------------|      |--------------------'
      *                                    | OPT  | BKSP |      |  DEL | RALT |
      *                                    `-------------/      \-------------'
@@ -93,8 +93,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
          KC_LSFT, KC_A, KC_R, KC_S, KC_T, KC_G,                         KC_M, KC_N, KC_E, KC_I, KC_O, KC_QUOT,
          KC_LCTL, KC_Z, KC_X, KC_C, KC_D, KC_V, 				        KC_K, KC_H, KC_COMM, KC_DOT, KC_SLSH, KC_BSLS,
 
-                             KC_LGUI, KC_SPC, MO(_RAISE),       MO(_NAV), KC_ENT, KC_RGUI,
-                                     KC_LOPT, KC_BSPC,                  KC_DEL, KC_RALT
+                             KC_LGUI, KC_SPC, MO(_RAISE),       MO(_NAV), KC_ENT, KC_BSPC,                                     KC_LOPT, KC_BSPC,                  KC_DEL, KC_RALT
      ),
 
 
