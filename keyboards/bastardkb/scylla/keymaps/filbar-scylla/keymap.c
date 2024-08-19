@@ -24,7 +24,10 @@
 
 #include QMK_KEYBOARD_H
 #include "quantum.h"
-#include "print.h"
+
+#ifdef CONSOLE_ENABLE
+#   include "print.h"
+#endif // CONSOLE_ENABLE
 
 #ifndef LAYER_INDICATOR_BRIGHTNESS_INC
 #    define LAYER_INDICATOR_BRIGHTNESS_INC 22
@@ -38,10 +41,6 @@ enum scylla_layers {
     _CONF,
 };
 
-enum scylla_keycodes {
-    COLEMAK = SAFE_RANGE,
-    QWERTY,
-};
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
@@ -55,7 +54,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
      * |LCTRL |   Z  |   X  |   C  |   V  |   B  |                    |   N  |   M  |   ,  |   .  |   /  |  \   |
      * `------------------------------------------------\      /------------------------------------------------'
-     *                             | CMD  |SP/SHF| MO(1)|      | MO(2)| ENT  | RGUI |
+     *                             | CMD  |  SPC | RAISE|      |  NAV | ENT  | RGUI |
      *                             `--------------------|      |--------------------'
      *                                    | OPT  | BKSP |      |  DEL | RALT |
      *                                    `-------------/      \-------------'
@@ -67,7 +66,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_LSFT, KC_A, KC_S, KC_D, KC_F, KC_G, 			          KC_H, KC_J, KC_K, KC_L, KC_SCLN, KC_QUOT,
         KC_LCTL, KC_Z, KC_X, KC_C, KC_V, KC_B, 			          KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH, KC_BSLS,
 
-                        KC_LGUI, LSFT_T(KC_SPC), MO(_RAISE),    MO(_NAV), KC_ENT, KC_RGUI,
+                        KC_LGUI, KC_SPC, MO(_RAISE),    MO(_NAV), KC_ENT, KC_RGUI,
                                 KC_LOPT, KC_BSPC, 		        KC_DEL, KC_RALT
     ),
 
@@ -82,7 +81,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
      * |LCTRL |   Z  |   X  |   C  |   D  |   V  |                    |   K  |   H  |   ,  |   .  |   /  |   \  |
      * `------------------------------------------------\      /------------------------------------------------'
-     *                             | CMD  |SP/SHF|_RAISE|      | _NAV | ENT  | RGUI |
+     *                             | CMD  |  SPC |_RAISE|      | _NAV | ENT  | RGUI |
      *                             `--------------------|      |--------------------'
      *                                    | OPT  | BKSP |      |  DEL | RALT |
      *                                    `-------------/      \-------------'
@@ -94,7 +93,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
          KC_LSFT, KC_A, KC_R, KC_S, KC_T, KC_G,                         KC_M, KC_N, KC_E, KC_I, KC_O, KC_QUOT,
          KC_LCTL, KC_Z, KC_X, KC_C, KC_D, KC_V, 				        KC_K, KC_H, KC_COMM, KC_DOT, KC_SLSH, KC_BSLS,
 
-                             KC_LGUI, LSFT_T(KC_SPC), MO(_RAISE),       MO(_NAV), KC_ENT, KC_RGUI,
+                             KC_LGUI, KC_SPC, MO(_RAISE),       MO(_NAV), KC_ENT, KC_RGUI,
                                      KC_LOPT, KC_BSPC,                  KC_DEL, KC_RALT
      ),
 
@@ -177,9 +176,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 
 
-bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-
 #ifdef CONSOLE_ENABLE
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     uprintf("KL: kc: 0x%04X, col: %2u, row: %2u, pressed: %u, time: %5u, int: %u, count: %u\n",
          keycode,
          record->event.key.col,
@@ -188,20 +186,22 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
          record->event.time,
          record->tap.interrupted,
          record->tap.count);
-#endif
     return true;
 }
+#endif
 
 
 #ifdef RGB_MATRIX_ENABLE
+/* Colours to use per layer
+ *
+ * Note that _QWERTY and _COLEMAK act as the default layer so they
+ * don't have defined layer colours here.  If you want to have
+ * colours for those layers you will need to tweak rgb_matrix_indicators_advanced_user(...)
+ */
 static HSV _get_hsv_for_layer_index(uint8_t layer) {
     switch (layer) {
-        case _QWERTY:
-            return (HSV){HSV_BLUE};
         case _NAV:
             return (HSV){HSV_AZURE};
-        case _COLEMAK:
-            return (HSV){HSV_GREEN};
         case _CONF:
             return (HSV){HSV_RED};
         case _RAISE:
@@ -230,10 +230,14 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 
         uint8_t layer = get_highest_layer(layer_state);
 
-        for (uint8_t row = 0; row < 10; ++row) {
-            for (uint8_t col = 0; col < 6; ++col) {
+        for (uint8_t row = 0; row < MATRIX_ROWS; ++row) {
+            for (uint8_t col = 0; col < MATRIX_COLS; ++col) {
                 uint8_t index = g_led_config.matrix_co[row][col];
+
+#               ifdef CONSOLE_ENABLE
                 uprintf( "Row: %d, Col: %d, Index: %d\n", row, col, index );
+#               endif // CONSOLE_ENABLE
+
 
                 if (index >= led_min && index < led_max && index != NO_LED) {
                     if( keymap_key_to_keycode(layer, (keypos_t){col,row}) > KC_TRNS ) {
@@ -277,15 +281,13 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 #endif // RGB_MATRIX_ENABLE
 
 
-void keyboard_post_init_user(void) {
-
 #ifdef CONSOLE_ENABLE
+void keyboard_post_init_user(void) {
     debug_enable=true;
     // debug_matrix=true;
     // debug_keyboard=true;
     // debug_mouse=true;
-#endif // CONSOLE_ENABLE
-
 }
+#endif // CONSOLE_ENABLE
 
 
