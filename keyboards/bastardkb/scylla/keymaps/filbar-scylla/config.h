@@ -1,10 +1,10 @@
 /* Increase the layer count */
-
 #define DYNAMIC_KEYMAP_LAYER_COUNT 5
+
+/* Needed for LED indicators to work across both halves */
 #define SPLIT_LAYER_STATE_ENABLE
 
 /* RGB colour effects */
-
 #define ENABLE_RGB_MATRIX_NONE
 #define ENABLE_RGB_MATRIX_SOLID_COLOR
 #define ENABLE_RGB_MATRIX_ALPHAS_MODS

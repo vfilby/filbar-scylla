@@ -230,71 +230,74 @@ static HSV _get_hsv_for_layer_index(uint8_t layer) {
 /* Layer effects that dynamically control LEDS on different layers to indicate which keys are available
  *
  */
-// bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
-//
-//     const uint8_t layer = get_highest_layer(layer_state);
-//     if (layer > 0) {
-//
-//         HSV hsv = _get_hsv_for_layer_index(layer);
-//
-//         // Set brightness to the configured interval brighter than current brightness, clamped to 255
-//         // (ie. uint8_t max value). This compensates for the dimmer appearance of the underglow LEDs.
-//         hsv.v         = MIN(rgb_matrix_get_val() + LAYER_INDICATOR_BRIGHTNESS_INC, 255);
-//         const RGB rgb = hsv_to_rgb(hsv);
-//         const RGB off = hsv_to_rgb((HSV){HSV_OFF});
-//
-//         uint8_t layer = get_highest_layer(layer_state);
-//
-//         for (uint8_t row = 0; row < 10; ++row) {
-//             for (uint8_t col = 0; col < 6; ++col) {
-//                 uint8_t index = g_led_config.matrix_co[row][col];
-//                 uprintf( "Row: %d, Col: %d, Index: %d\n", row, col, index );
-//
-//                 if (index >= led_min && index < led_max && index != NO_LED) {
-//                     if( keymap_key_to_keycode(layer, (keypos_t){col,row}) > KC_TRNS ) {
-//                         rgb_matrix_set_color(index, rgb.r, rgb.g, rgb.b);
-//                     } else {
-//                         rgb_matrix_set_color(index, off.r, off.g, off.b);
-//                     }
-//                 }
-//             }
-//         }
-//     }
-//     return false;
-// }
-
-// Layer state indicator
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 
-    // Set underglow to a solid color for highest active layer apart from the base layer.
     const uint8_t layer = get_highest_layer(layer_state);
     if (layer > 0) {
+
         HSV hsv = _get_hsv_for_layer_index(layer);
 
-        // Set brightness to the configured interval brighter than current brightness,
-        // clamped to 255 (ie. uint8_t max value). This compensates for the dimmer
-        // appearance of the underglow LEDs.
+        // Set brightness to the configured interval brighter than current brightness, clamped to 255
+        // (ie. uint8_t max value). This compensates for the dimmer appearance of the underglow LEDs.
         hsv.v         = MIN(rgb_matrix_get_val() + LAYER_INDICATOR_BRIGHTNESS_INC, 255);
         const RGB rgb = hsv_to_rgb(hsv);
+        const RGB off = hsv_to_rgb((HSV){HSV_OFF});
 
-        for( int i = led_min; i < led_max; i++ ) {
-            if( HAS_FLAGS(g_led_config.flags[i], LED_FLAG_KEYLIGHT) || HAS_FLAGS(g_led_config.flags[i], LED_FLAG_UNDERGLOW) ) {
-                rgb_matrix_set_color(i, rgb.r, rgb.g, rgb.b);
+        uint8_t layer = get_highest_layer(layer_state);
+
+        for (uint8_t row = 0; row < 10; ++row) {
+            for (uint8_t col = 0; col < 6; ++col) {
+                uint8_t index = g_led_config.matrix_co[row][col];
+                uprintf( "Row: %d, Col: %d, Index: %d\n", row, col, index );
+
+                if (index >= led_min && index < led_max && index != NO_LED) {
+                    if( keymap_key_to_keycode(layer, (keypos_t){col,row}) > KC_TRNS ) {
+                        rgb_matrix_set_color(index, rgb.r, rgb.g, rgb.b);
+                    } else {
+                        rgb_matrix_set_color(index, off.r, off.g, off.b);
+                    }
+                }
             }
         }
     }
-    return true;
-};
+    return false;
+}
+
+// Layer state indicator
+// bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+//
+//     // Set underglow to a solid color for highest active layer apart from the base layer.
+//     const uint8_t layer = get_highest_layer(layer_state);
+//     if (layer > 0) {
+//         HSV hsv = _get_hsv_for_layer_index(layer);
+//
+//         // Set brightness to the configured interval brighter than current brightness,
+//         // clamped to 255 (ie. uint8_t max value). This compensates for the dimmer
+//         // appearance of the underglow LEDs.
+//         hsv.v         = MIN(rgb_matrix_get_val() + LAYER_INDICATOR_BRIGHTNESS_INC, 255);
+//         const RGB rgb = hsv_to_rgb(hsv);
+//
+//         for( int i = led_min; i < led_max; i++ ) {
+//             if( HAS_FLAGS(g_led_config.flags[i], LED_FLAG_KEYLIGHT) || HAS_FLAGS(g_led_config.flags[i], LED_FLAG_UNDERGLOW) ) {
+//                 rgb_matrix_set_color(i, rgb.r, rgb.g, rgb.b);
+//             }
+//         }
+//     }
+//     return true;
+// };
 
 #endif // RGB_MATRIX_ENABLE
 
+
 void keyboard_post_init_user(void) {
 
-    // Customise these values to desired behaviour
+#ifdef CONSOLE_ENABLE
     debug_enable=true;
     // debug_matrix=true;
-    //debug_keyboard=true;
-    //debug_mouse=true;
+    // debug_keyboard=true;
+    // debug_mouse=true;
+#endif // CONSOLE_ENABLE
+
 }
 
 
