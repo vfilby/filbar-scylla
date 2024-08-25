@@ -42,6 +42,13 @@ enum scylla_layers {
 };
 
 
+/* Set the default layer.
+ *
+ * Only colemak and qwerty make sense as options.
+ */
+#define DEFAULT_LAYER _COLEMAK
+
+
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     /* QWERTY
@@ -64,10 +71,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         QK_GESC, KC_1, KC_2, KC_3, KC_4, LT(_CONF, KC_5),         KC_6, KC_7, KC_8, KC_9, KC_0, KC_BSPC,
         KC_TAB, KC_Q, KC_W, KC_E, KC_R, KC_T, 			          KC_Y, KC_U, KC_I, KC_O, KC_P, KC_MINS,
         KC_LSFT, KC_A, KC_S, KC_D, KC_F, KC_G, 			          KC_H, KC_J, KC_K, KC_L, KC_SCLN, KC_QUOT,
-        KC_LCTL, KC_Z, KC_X, KC_C, KC_V, KC_B, 			          KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH, KC_BSLS,
+        KC_LCTL, KC_Z, KC_X, KC_C, KC_V, KC_B, 			          KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH, KC_RGUI,
 
-                        KC_LGUI, KC_SPC, MO(_RAISE),    MO(_NAV), KC_ENT, KC_BSPC,
-                                KC_LOPT, KC_BSPC, 		        KC_DEL, KC_RALT
+                        KC_LGUI, KC_SPC, MO(_RAISE),            MO(_NAV), KC_ENT, KC_RGUI,
+                                KC_LOPT, KC_BSPC, 		        KC_LSFT, KC_RALT
     ),
 
 
@@ -81,7 +88,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
      * |LCTRL |   Z  |   X  |   C  |   D  |   V  |                    |   K  |   H  |   ,  |   .  |   /  |   \  |
      * `------------------------------------------------\      /------------------------------------------------'
-     *                             | CMD  |  SPC |_RAISE|      | _NAV | ENT  | CMD  |
+     *                             | CMD  |  SPC | RAISE|      | NAV  | ENT  | CMD  |
      *                             `--------------------|      |--------------------'
      *                                    | OPT  | BKSP |      |  DEL | RALT |
      *                                    `-------------/      \-------------'
@@ -93,17 +100,18 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
          KC_LSFT, KC_A, KC_R, KC_S, KC_T, KC_G,                         KC_M, KC_N, KC_E, KC_I, KC_O, KC_QUOT,
          KC_LCTL, KC_Z, KC_X, KC_C, KC_D, KC_V, 				        KC_K, KC_H, KC_COMM, KC_DOT, KC_SLSH, KC_BSLS,
 
-                             KC_LGUI, KC_SPC, MO(_RAISE),       MO(_NAV), KC_ENT, KC_BSPC,                                     KC_LOPT, KC_BSPC,                  KC_DEL, KC_RALT
+                             KC_LGUI, KC_SPC, MO(_RAISE),       MO(_NAV), KC_ENT, KC_RGUI,
+                                     KC_LOPT, KC_BSPC,                  KC_LSFT, KC_RALT
      ),
 
 
     /* RAISE
      * ,-----------------------------------------.                    ,-----------------------------------------.
-     * |  ~   |  !   |  @   |  #   |  $   |  %   |                    |  ^   |  &   |  *   |  (   |  )   |  DEL  |
+     * |  ~   |  !   |  @   |  #   |  $   |  %   |                    |  ^   |  &   |  *   |  (   |  )   |  DEL |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
      * |  __  |  __  |   [  |   ]  |  __  |  __  |                    |  __  |   7  |   8  |   9  |  __  |  +   |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-     * |  __  |  __  |   (  |   )  |  __  |  __  |                    |  __  |   4  |   5  |   6  |  -   |  |   |
+     * |  __  |  <   |   (  |   )  |  >   |  __  |                    |  __  |   4  |   5  |   6  |  -   |  |   |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
      * |  __  |  __  |   {  |   }  |  __  |  __  |                    |  __  |   1  |   2  |   3  |  =   |  _   |
      * `------------------------------------------------\      /------------------------------------------------'
@@ -115,10 +123,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_RAISE] = LAYOUT_split_4x6_5(
         KC_TILD, KC_EXLM, KC_AT, KC_HASH, KC_DLR, KC_PERC,          KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, KC_DEL,
          _______, _______, KC_LBRC, KC_RBRC, _______, _______,      _______, KC_P7, KC_P8, KC_P9, _______, KC_PLUS,
-         _______, _______, KC_LPRN, KC_RPRN, _______, _______,      _______, KC_P4, KC_P5, KC_P6, KC_MINS, KC_PIPE,
+         _______, KC_LT, KC_LPRN, KC_RPRN, KC_GT, _______,          _______, KC_P4, KC_P5, KC_P6, KC_MINS, KC_PIPE,
          _______, _______, KC_LCBR, KC_RCBR, _______, _______,      _______, KC_P1, KC_P2, KC_P3, KC_EQL, KC_UNDS,
-                                    KC_LGUI, KC_HOME, KC_TRNS,      KC_TRNS, KC_RALT, KC_RGUI,
-                                            KC_SPC, KC_BSPC,        KC_RCTL, KC_ENT
+                                    KC_TRNS, KC_TRNS, KC_TRNS,      KC_TRNS, KC_TRNS, KC_TRNS,
+                                            KC_TRNS, KC_TRNS,        KC_TRNS, KC_TRNS
      ),
 
     /* NAV
@@ -142,8 +150,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,       LOPT(KC_LEFT), KC_LEFT, KC_DOWN, KC_RIGHT, LOPT(KC_RIGHT), KC_PGDN,
         KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,       KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
 
-                            KC_NO, KC_NO, KC_TRNS, 		KC_TRNS, KC_NO, KC_NO,
-                                   KC_NO, KC_NO, 		KC_LSFT, KC_NO
+                            KC_TRNS, KC_TRNS, KC_TRNS, 		KC_TRNS, KC_TRNS, KC_TRNS,
+                                   KC_TRNS, KC_TRNS, 		KC_TRNS, KC_TRNS
     ),
 
 
@@ -280,13 +288,19 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 #endif // RGB_MATRIX_ENABLE
 
 
-#ifdef CONSOLE_ENABLE
+
 void keyboard_post_init_user(void) {
+
+    default_layer_set(1 << DEFAULT_LAYER );
+
+
+#   ifdef CONSOLE_ENABLE
     debug_enable=true;
     // debug_matrix=true;
     // debug_keyboard=true;
     // debug_mouse=true;
+#   endif // CONSOLE_ENABLE
 }
-#endif // CONSOLE_ENABLE
+
 
 
