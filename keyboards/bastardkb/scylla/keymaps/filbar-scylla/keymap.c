@@ -1,5 +1,7 @@
 /*
- * Copyright 2021 Quentin LEBASTARD <qlebastard@gmail.com>
+ * Copyright 2024 Vincent Filby (v@filby.ca)
+ *
+ * Based off the original Scylla keymap and https://github.com/archydragon/lily-layout/blob/main/qmk_keymap/keymap.c
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +20,6 @@
 
 
  /*
-  * Keymap not clearing after changes with VIA?
   * dynamic layer colour: https://github.com/Bastardkb/bastardkb-qmk/blob/bkb-master/keyboards/bastardkb/dilemma/4x6_4/4x6_4.c#L69-L120
   */
 
@@ -34,7 +35,8 @@
 #endif
 
 enum scylla_layers {
-    _QWERTY = 0,
+    _BASE = 0,
+    _QWERTY,
     _COLEMAK,
     _RAISE,
     _NAV,
@@ -51,58 +53,83 @@ enum scylla_layers {
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
-    /* QWERTY
+
+    /* BASE
      * ,-----------------------------------------.                    ,-----------------------------------------.
-     * | ESC  |   1  |   2  |   3  |   4  |   5  |                    |   6  |   7  |   8  |   9  |   0  |  `   |
+     * | ESC  |  __  |  __  |  __  |  __  |  __  |                    |  __  |  __  |  __  |  __  |  __  |  __  |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-     * | Tab  |   Q  |   W  |   E  |   R  |   T  |                    |   Y  |   U  |   I  |   O  |   P  |  -   |
+     * | Tab  |  __  |  __  |  __  |  __  |  __  |                    |  __  |  __  |  __  |  __  |  __  |  __  |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-     * |LShift|   A  |   S  |   D  |   F  |   G  |                    |   H  |   J  |   K  |   L  |   ;  |  '   |
+     * |LShift|  __  |  __  |  __  |  __  |  __  |                    |  __  |  __  |  __  |  __  |  __  |  __  |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-     * |LCTRL |   Z  |   X  |   C  |   V  |   B  |                    |   N  |   M  |   ,  |   .  |   /  |  \   |
+     * |LCTRL |  __  |  __  |  __  |  __  |  __  |                    |  __  |  __  |  __  |  __  |  __  |  __  |
      * `------------------------------------------------\      /------------------------------------------------'
      *                             | CMD  |  SPC | RAISE|      |  NAV | ENT  | CMD  |
      *                             `--------------------|      |--------------------'
      *                                    | OPT  | BKSP |      |  DEL | RALT |
      *                                    `-------------/      \-------------'
      */
+    [_BASE] = LAYOUT_split_4x6_5(
+        QK_GESC, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,       KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
+        KC_TAB,  KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,       KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
+        KC_LSFT, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,       KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
+        KC_LCTL, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,       KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
 
-    [_QWERTY] = LAYOUT_split_4x6_5(
-        QK_GESC, KC_1, KC_2, KC_3, KC_4, LT(_CONF, KC_5),         KC_6, KC_7, KC_8, KC_9, KC_0, KC_BSPC,
-        KC_TAB, KC_Q, KC_W, KC_E, KC_R, KC_T, 			          KC_Y, KC_U, KC_I, KC_O, KC_P, KC_MINS,
-        KC_LSFT, KC_A, KC_S, KC_D, KC_F, KC_G, 			          KC_H, KC_J, KC_K, KC_L, KC_SCLN, KC_QUOT,
-        KC_LCTL, KC_Z, KC_X, KC_C, KC_V, KC_B, 			          KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH, KC_RGUI,
-
-                        KC_LGUI, KC_SPC, MO(_RAISE),            MO(_NAV), KC_ENT, KC_RGUI,
-                                KC_LOPT, KC_BSPC, 		        KC_LSFT, KC_RALT
+                       KC_LGUI, KC_SPC, MO(_RAISE),            MO(_NAV), KC_ENT, KC_RGUI,
+                               KC_LOPT, KC_BSPC, 		        KC_LSFT, KC_RALT
     ),
 
-
-    /* COLEMAK-DH
+    /* QWERTY
      * ,-----------------------------------------.                    ,-----------------------------------------.
-     * | ESC  |   1  |   2  |   3  |   4  |   5  |                    |   6  |   7  |   8  |   9  |   0  |  `   |
+     * | TRNS |   1  |   2  |   3  |   4  |   5  |                    |   6  |   7  |   8  |   9  |   0  |  `   |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-     * | Tab  |   Q  |   W  |   F  |   P  |   B  |                    |   J  |   L  |   U  |   Y  |   ;  |  -   |
+     * | TRNS |   Q  |   W  |   E  |   R  |   T  |                    |   Y  |   U  |   I  |   O  |   P  |  -   |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-     * |LShift|   A  |   R  |   S  |   T  |   G  |                    |   M  |   N  |   E  |   I  |   O  |  '   |
+     * | TRNS |   A  |   S  |   D  |   F  |   G  |                    |   H  |   J  |   K  |   L  |   ;  |  '   |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-     * |LCTRL |   Z  |   X  |   C  |   D  |   V  |                    |   K  |   H  |   ,  |   .  |   /  |   \  |
+     * | TRNS |   Z  |   X  |   C  |   V  |   B  |                    |   N  |   M  |   ,  |   .  |   /  |  \   |
      * `------------------------------------------------\      /------------------------------------------------'
-     *                             | CMD  |  SPC | RAISE|      | NAV  | ENT  | CMD  |
+     *                             | TRNS | TRNS | TRNS |      | TRNS | TRNS | TRNS |
      *                             `--------------------|      |--------------------'
-     *                                    | OPT  | BKSP |      |  DEL | RALT |
+     *                                    | TRNS | TRNS |      | TRNS | TRNS |
      *                                    `-------------/      \-------------'
      */
 
-     [_COLEMAK] = LAYOUT_split_4x6_5(
-         QK_GESC, KC_1, KC_2, KC_3, KC_4, LT(_CONF, KC_5),              KC_6, KC_7, KC_8, KC_9, KC_0, KC_BSPC,
-         KC_TAB, KC_Q, KC_W, KC_F, KC_P, KC_B, 						    KC_J, KC_L, KC_U, KC_Y, KC_SCLN, KC_MINS,
-         KC_LSFT, KC_A, KC_R, KC_S, KC_T, KC_G,                         KC_M, KC_N, KC_E, KC_I, KC_O, KC_QUOT,
-         KC_LCTL, KC_Z, KC_X, KC_C, KC_D, KC_V, 				        KC_K, KC_H, KC_COMM, KC_DOT, KC_SLSH, KC_BSLS,
+    [_QWERTY] = LAYOUT_split_4x6_5(
+        KC_TRNS, KC_1, KC_2, KC_3, KC_4, LT(_CONF, KC_5),         KC_6, KC_7, KC_8, KC_9, KC_0, KC_BSPC,
+        KC_TRNS, KC_Q, KC_W, KC_E, KC_R, KC_T, 			          KC_Y, KC_U, KC_I, KC_O, KC_P, KC_MINS,
+        KC_TRNS, KC_A, KC_S, KC_D, KC_F, KC_G, 			          KC_H, KC_J, KC_K, KC_L, KC_SCLN, KC_QUOT,
+        KC_TRNS, KC_Z, KC_X, KC_C, KC_V, KC_B, 			          KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH, KC_RGUI,
 
-                             KC_LGUI, KC_SPC, MO(_RAISE),       MO(_NAV), KC_ENT, KC_RGUI,
-                                     KC_LOPT, KC_BSPC,                  KC_LSFT, KC_RALT
-     ),
+                        KC_TRNS, KC_TRNS, KC_TRNS,      KC_TRNS, KC_TRNS, KC_TRNS,
+                                KC_TRNS, KC_TRNS,        KC_TRNS, KC_TRNS
+    ),
+
+
+    /* COLEMAK-DHm
+     * ,-----------------------------------------.                    ,-----------------------------------------.
+     * | TRNS |   1  |   2  |   3  |   4  |   5  |                    |   6  |   7  |   8  |   9  |   0  |  `   |
+     * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
+     * | TRNS |   Q  |   W  |   F  |   P  |   B  |                    |   J  |   L  |   U  |   Y  |   ;  |  -   |
+     * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
+     * | TRNS |   A  |   R  |   S  |   T  |   G  |                    |   M  |   N  |   E  |   I  |   O  |  '   |
+     * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
+     * | TRNS |   Z  |   X  |   C  |   D  |   V  |                    |   K  |   H  |   ,  |   .  |   /  |   \  |
+     * `------------------------------------------------\      /------------------------------------------------'
+     *                             | TRNS | TRNS | TRNS |      | TRNS | TRNS | TRNS |
+     *                             `--------------------|      |--------------------'
+     *                                    | TRNS | TRNS |      | TRNS | TRNS |
+     *                                    `-------------/      \-------------'
+     */
+    [_COLEMAK] = LAYOUT_split_4x6_5(
+        KC_TRNS, KC_1, KC_2, KC_3, KC_4, LT(_CONF, KC_5),              KC_6, KC_7, KC_8, KC_9, KC_0, KC_BSPC,
+        KC_TRNS, KC_Q, KC_W, KC_F, KC_P, KC_B, 						    KC_J, KC_L, KC_U, KC_Y, KC_SCLN, KC_MINS,
+        KC_TRNS, KC_A, KC_R, KC_S, KC_T, KC_G,                         KC_M, KC_N, KC_E, KC_I, KC_O, KC_QUOT,
+        KC_TRNS, KC_Z, KC_X, KC_C, KC_D, KC_V, 				        KC_K, KC_H, KC_COMM, KC_DOT, KC_SLSH, KC_BSLS,
+
+                       KC_TRNS, KC_TRNS, KC_TRNS,      KC_TRNS, KC_TRNS, KC_TRNS,
+                               KC_TRNS, KC_TRNS,        KC_TRNS, KC_TRNS
+    ),
 
 
     /* RAISE
@@ -156,30 +183,30 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 
 
-     /* CONFIGURATION
-      * ,-----------------------------------------.                    ,-----------------------------------------.
-      * |  __  |  __  |  __  |  __  |  __  |  __  |                    |CLEAR |  __  |  __  |  __  |  __  |  __  |
-      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-      * |  __  |  __  |  __  |  __  |  __  |  __  |                    |  RGB | MOD U| HUE U|  __  |  __  |  __  |
-      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-      * |  __  |  __  |  __  |  __  |  __  |  __  |                    |  __  | MOD D| HUE D|  __  |  __  |  __  |
-      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-      * |  __  |  __  |  __  |  __  |  __  |  __  |                    |  __  |  __  |  __  |  __  |  __  |  __  |
-      * `------------------------------------------------\      /------------------------------------------------'
-      *                             |  __  |  __  |  __  |      |QWERTY|COLEMK|  __  |
-      *                             `--------------------|      |--------------------'
-      *                                    |  __  |  __  |      |  __  |  __  |
-      *                                    `-------------/      \-------------'
-      */
-     [_CONF] = LAYOUT_split_4x6_5(
-         KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,       QK_CLEAR_EEPROM, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
-         KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,       RGB_TOG, RGB_MOD, RGB_HUI, KC_NO, KC_NO, KC_NO,
-         KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,       KC_NO, RGB_RMOD, RGB_HUD, KC_NO, KC_NO, KC_NO,
-         KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,       KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
+    /* CONFIGURATION
+     * ,-----------------------------------------.                    ,-----------------------------------------.
+     * |  __  |  __  |  __  |  __  |  __  |  __  |                    |CLEAR |  __  |  __  |  __  |  __  |  __  |
+     * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
+     * |  __  |  __  |  __  |  __  |  __  |  __  |                    |  RGB | MOD U| HUE U|  __  |  __  |  __  |
+     * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
+     * |  __  |  __  |  __  |  __  |  __  |  __  |                    |  __  | MOD D| HUE D|  __  |  __  |  __  |
+     * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
+     * |  __  |  __  |  __  |  __  |  __  |  __  |                    |  __  |  __  |  __  |  __  |  __  |  __  |
+     * `------------------------------------------------\      /------------------------------------------------'
+     *                             |  __  |  __  |  __  |      |QWERTY|COLEMK|  __  |
+     *                             `--------------------|      |--------------------'
+     *                                    |  __  |  __  |      |  __  |  __  |
+     *                                    `-------------/      \-------------'
+     */
+    [_CONF] = LAYOUT_split_4x6_5(
+        KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,       QK_CLEAR_EEPROM, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
+        KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,       RGB_TOG, RGB_MOD, RGB_HUI, KC_NO, KC_NO, KC_NO,
+        KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,       KC_NO, RGB_RMOD, RGB_HUD, KC_NO, KC_NO, KC_NO,
+        KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,       KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
 
-                             KC_NO, KC_NO, KC_NO, 		DF(_QWERTY), DF(_COLEMAK), KC_NO,
-                                   KC_NO, KC_NO, 		KC_NO, KC_NO
-     ),
+                            KC_NO, KC_NO, KC_NO, 		DF(_QWERTY), DF(_COLEMAK), KC_NO,
+                                  KC_NO, KC_NO, 		KC_NO, KC_NO
+    ),
 };
 
 

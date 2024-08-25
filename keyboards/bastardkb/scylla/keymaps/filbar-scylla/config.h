@@ -1,5 +1,5 @@
 /* Increase the layer count */
-#define DYNAMIC_KEYMAP_LAYER_COUNT 5
+#define DYNAMIC_KEYMAP_LAYER_COUNT 8
 
 /* Needed for LED indicators to work across both halves */
 #define SPLIT_LAYER_STATE_ENABLE
