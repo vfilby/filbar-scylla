@@ -234,6 +234,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
  */
 static HSV _get_hsv_for_layer_index(uint8_t layer) {
     switch (layer) {
+        case _QWERTY:
+            return (HSV){HSV_RED};
+        case _COLEMAK:
+            return (HSV){HSV_GREEN};
         case _NAV:
             return (HSV){HSV_AZURE};
         case _CONF:
@@ -241,7 +245,7 @@ static HSV _get_hsv_for_layer_index(uint8_t layer) {
         case _RAISE:
             return (HSV){HSV_PURPLE};
         default:
-            return (HSV){HSV_TEAL};
+            return (HSV){HSV_OFF};
     };
 }
 
@@ -251,8 +255,40 @@ static HSV _get_hsv_for_layer_index(uint8_t layer) {
  */
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 
+
+
     const uint8_t layer = get_highest_layer(layer_state);
-    if (layer > 0) {
+
+
+    /* For typing layers light the whole keyboard */
+    if( layer <= _COLEMAK ) {
+        for( uint8_t layer = _BASE; layer < _CONF; layer++ ) {
+            if( default_layer_state & (1 << layer) ) {
+                HSV hsv = _get_hsv_for_layer_index(layer);
+                rgblight_sethsv( hsv.h, hsv.s, hsv.v );
+
+#               ifdef CONSOLE_ENABLE
+                uprintf( "Default layer: layer: %d, default_layer: %d, hsv:(%d,%d,%d)\n", layer, default_layer_state, hsv.h, hsv.s, hsv.v );
+#               endif // CONSOLE_ENABLE
+            }
+        }
+
+
+
+
+
+
+
+        //rgblight_setrgb(rgb.r, rgb.g, rgb.b);
+        // for( int i = led_min; i < led_max; i++ ) {
+        //     if( HAS_FLAGS(g_led_config.flags[i], LED_FLAG_KEYLIGHT) || HAS_FLAGS(g_led_config.flags[i], LED_FLAG_UNDERGLOW) ) {
+        //         rgb_matrix_set_color(i, rgb.r, rgb.g, rgb.b);
+        //     }
+        // }
+
+    /* For special layers use lighting that reflects the keybindings. */
+    } else {
+
 
         HSV hsv = _get_hsv_for_layer_index(layer);
 
@@ -269,7 +305,7 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
                 uint8_t index = g_led_config.matrix_co[row][col];
 
 #               ifdef CONSOLE_ENABLE
-                uprintf( "Row: %d, Col: %d, Index: %d\n", row, col, index );
+                // uprintf( "Row: %d, Col: %d, Index: %d\n", row, col, index );
 #               endif // CONSOLE_ENABLE
 
 
