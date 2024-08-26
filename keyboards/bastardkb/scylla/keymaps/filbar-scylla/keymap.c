@@ -149,9 +149,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      */
     [_RAISE] = LAYOUT_split_4x6_5(
         KC_TILD, KC_EXLM, KC_AT, KC_HASH, KC_DLR, KC_PERC,          KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, KC_DEL,
-         _______, _______, KC_LBRC, KC_RBRC, _______, _______,      _______, KC_P7, KC_P8, KC_P9, _______, KC_PLUS,
-         _______, KC_LT, KC_LPRN, KC_RPRN, KC_GT, _______,          _______, KC_P4, KC_P5, KC_P6, KC_MINS, KC_PIPE,
-         _______, _______, KC_LCBR, KC_RCBR, _______, _______,      _______, KC_P1, KC_P2, KC_P3, KC_EQL, KC_UNDS,
+         KC_NO, KC_NO, KC_LBRC, KC_RBRC, KC_NO, KC_NO,              KC_NO, KC_P7, KC_P8, KC_P9, KC_NO, KC_PLUS,
+         KC_NO, KC_LT, KC_LPRN, KC_RPRN, KC_GT, KC_NO,              KC_NO, KC_P4, KC_P5, KC_P6, KC_MINS, KC_PIPE,
+         KC_NO, KC_NO, KC_LCBR, KC_RCBR, KC_NO, KC_NO,              KC_NO, KC_P1, KC_P2, KC_P3, KC_EQL, KC_UNDS,
                                     KC_TRNS, KC_TRNS, KC_TRNS,      KC_TRNS, KC_TRNS, KC_TRNS,
                                             KC_TRNS, KC_TRNS,        KC_TRNS, KC_TRNS
      ),
@@ -255,41 +255,19 @@ static HSV _get_hsv_for_layer_index(uint8_t layer) {
  */
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 
-
-
     const uint8_t layer = get_highest_layer(layer_state);
 
-
-    /* For typing layers light the whole keyboard */
+    /* For typing layers light the whole keyboard, just set the hue and keep the matrix effects */
     if( layer <= _COLEMAK ) {
         for( uint8_t layer = _BASE; layer < _CONF; layer++ ) {
             if( default_layer_state & (1 << layer) ) {
                 HSV hsv = _get_hsv_for_layer_index(layer);
                 rgblight_sethsv( hsv.h, hsv.s, hsv.v );
-
-#               ifdef CONSOLE_ENABLE
-                uprintf( "Default layer: layer: %d, default_layer: %d, hsv:(%d,%d,%d)\n", layer, default_layer_state, hsv.h, hsv.s, hsv.v );
-#               endif // CONSOLE_ENABLE
             }
         }
 
-
-
-
-
-
-
-        //rgblight_setrgb(rgb.r, rgb.g, rgb.b);
-        // for( int i = led_min; i < led_max; i++ ) {
-        //     if( HAS_FLAGS(g_led_config.flags[i], LED_FLAG_KEYLIGHT) || HAS_FLAGS(g_led_config.flags[i], LED_FLAG_UNDERGLOW) ) {
-        //         rgb_matrix_set_color(i, rgb.r, rgb.g, rgb.b);
-        //     }
-        // }
-
     /* For special layers use lighting that reflects the keybindings. */
     } else {
-
-
         HSV hsv = _get_hsv_for_layer_index(layer);
 
         // Set brightness to the configured interval brighter than current brightness, clamped to 255
@@ -303,11 +281,6 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
         for (uint8_t row = 0; row < MATRIX_ROWS; ++row) {
             for (uint8_t col = 0; col < MATRIX_COLS; ++col) {
                 uint8_t index = g_led_config.matrix_co[row][col];
-
-#               ifdef CONSOLE_ENABLE
-                // uprintf( "Row: %d, Col: %d, Index: %d\n", row, col, index );
-#               endif // CONSOLE_ENABLE
-
 
                 if (index >= led_min && index < led_max && index != NO_LED) {
                     if( keymap_key_to_keycode(layer, (keypos_t){col,row}) > KC_TRNS ) {
