@@ -21,10 +21,16 @@
 
  /*
   * dynamic layer colour: https://github.com/Bastardkb/bastardkb-qmk/blob/bkb-master/keyboards/bastardkb/dilemma/4x6_4/4x6_4.c#L69-L120
+  * Layerlock: https://getreuer.info/posts/keyboards/layer-lock/index.html
+  *
+  * Ideas?
+  * Ditch the numpad and use raise for key combos
+  * Lock layer? https://getreuer.info/posts/keyboards/layer-lock/index.html
   */
 
 #include QMK_KEYBOARD_H
 #include "quantum.h"
+#include "features/layer_lock.h"
 
 #ifdef CONSOLE_ENABLE
 #   include "print.h"
@@ -43,6 +49,11 @@ enum scylla_layers {
     _CONF,
 };
 
+enum custom_keycodes {
+  LLOCK = SAFE_RANGE,
+  // Other custom keys...
+};
+
 
 /* Set the default layer.
  *
@@ -56,7 +67,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     /* BASE
      * ,-----------------------------------------.                    ,-----------------------------------------.
-     * | ESC  |  __  |  __  |  __  |  __  |  __  |                    |  __  |  __  |  __  |  __  |  __  |  __  |
+     * | ESC  |  __  |  __  |  __  |  __  |  __  |                    |  __  |  __  |  __  |  __  |  __  |  <-  |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
      * | Tab  |  __  |  __  |  __  |  __  |  __  |                    |  __  |  __  |  __  |  __  |  __  |  __  |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
@@ -70,7 +81,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      *                                    `-------------/      \-------------'
      */
     [_BASE] = LAYOUT_split_4x6_5(
-        QK_GESC, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,       KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
+        QK_GESC, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,       KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_BSPC,
         KC_TAB,  KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,       KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
         KC_LSFT, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,       KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
         KC_LCTL, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,       KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
@@ -81,7 +92,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     /* QWERTY
      * ,-----------------------------------------.                    ,-----------------------------------------.
-     * | TRNS |   1  |   2  |   3  |   4  |   5  |                    |   6  |   7  |   8  |   9  |   0  |  `   |
+     * | TRNS |   1  |   2  |   3  |   4  |   5  |                    |   6  |   7  |   8  |   9  |   0  | TRNS |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
      * | TRNS |   Q  |   W  |   E  |   R  |   T  |                    |   Y  |   U  |   I  |   O  |   P  |  -   |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
@@ -96,7 +107,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      */
 
     [_QWERTY] = LAYOUT_split_4x6_5(
-        KC_TRNS, KC_1, KC_2, KC_3, KC_4, LT(_CONF, KC_5),         KC_6, KC_7, KC_8, KC_9, KC_0, KC_BSPC,
+        KC_TRNS, KC_1, KC_2, KC_3, KC_4, LT(_CONF, KC_5),         KC_6, KC_7, KC_8, KC_9, KC_0, KC_TRNS,
         KC_TRNS, KC_Q, KC_W, KC_E, KC_R, KC_T, 			          KC_Y, KC_U, KC_I, KC_O, KC_P, KC_MINS,
         KC_TRNS, KC_A, KC_S, KC_D, KC_F, KC_G, 			          KC_H, KC_J, KC_K, KC_L, KC_SCLN, KC_QUOT,
         KC_TRNS, KC_Z, KC_X, KC_C, KC_V, KC_B, 			          KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH, KC_RGUI,
@@ -108,7 +119,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     /* COLEMAK-DHm
      * ,-----------------------------------------.                    ,-----------------------------------------.
-     * | TRNS |   1  |   2  |   3  |   4  |   5  |                    |   6  |   7  |   8  |   9  |   0  |  `   |
+     * | TRNS |   1  |   2  |   3  |   4  |   5  |                    |   6  |   7  |   8  |   9  |   0  | TRNS |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
      * | TRNS |   Q  |   W  |   F  |   P  |   B  |                    |   J  |   L  |   U  |   Y  |   ;  |  -   |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
@@ -122,62 +133,63 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      *                                    `-------------/      \-------------'
      */
     [_COLEMAK] = LAYOUT_split_4x6_5(
-        KC_TRNS, KC_1, KC_2, KC_3, KC_4, LT(_CONF, KC_5),       KC_6, KC_7, KC_8, KC_9, KC_0, KC_BSPC,
-        KC_TRNS, KC_Q, KC_W, KC_F, KC_P, KC_B, 					KC_J, KC_L, KC_U, KC_Y, KC_SCLN, KC_MINS,
-        KC_TRNS, KC_A, KC_R, KC_S, KC_T, KC_G,                  KC_M, KC_N, KC_E, KC_I, KC_O, KC_QUOT,
-        KC_TRNS, KC_Z, KC_X, KC_C, KC_D, KC_V, 				    KC_K, KC_H, KC_COMM, KC_DOT, KC_SLSH, KC_BSLS,
+        KC_TRNS, KC_1, KC_2, KC_3, KC_4, LT(_CONF, KC_5),             KC_6, KC_7, KC_8, KC_9, KC_0, KC_TRNS,
+        KC_TRNS, KC_Q, KC_W, KC_F, KC_P, KC_B, 			              KC_J, KC_L, KC_U, KC_Y, KC_SCLN, KC_MINS,
+        KC_TRNS, KC_A, KC_R, KC_S, KC_T, KC_G,                        KC_M, KC_N, KC_E, KC_I, KC_O, KC_QUOT,
+        KC_TRNS, KC_Z, KC_X, KC_C, KC_D, KC_V, 			              KC_K, KC_H, KC_COMM, KC_DOT, KC_SLSH, KC_BSLS,
 
-                       KC_TRNS, KC_TRNS, KC_TRNS,               KC_TRNS, KC_TRNS, KC_TRNS,
-                               KC_TRNS, KC_TRNS,                KC_TRNS, KC_TRNS
+                               KC_TRNS, KC_TRNS, KC_TRNS,        KC_TRNS, KC_TRNS, KC_TRNS,
+                                        KC_TRNS, KC_TRNS,        KC_TRNS, KC_TRNS
     ),
 
 
     /* RAISE
      * ,-----------------------------------------.                    ,-----------------------------------------.
-     * |  ~   |  !   |  @   |  #   |  $   |  %   |                    |  ^   |  &   |  *   |  (   |  )   |  DEL |
+     * |  ~   |  !   |  @   |  #   |  $   |  %   |                    |  ^   |  &   |  *   |  (   |  )   | TRNS |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-     * |  __  |  __  |   [  |   ]  |  __  |  __  |                    |  __  |   7  |   8  |   9  |  __  |  +   |
+     * |G(TAB)| G(Q) | G(W) | G(F) |  __  |  __  |                    |   `  |  <   |   [  |   ]  |  >   |  =   |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-     * | TRNS |  <   |   (  |   )  |  >   |  __  |                    |  __  |   4  |   5  |   6  |  -   |  |   |
+     * | TRNS | G(A) | G(R) | G(S) | G(T) |  __  |                    |  __  |  {   |   (  |   )  |  }   |  +   |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-     * | TRNS |  __  |   {  |   }  |  __  |  __  |                    |  __  |   1  |   2  |   3  |  =   |  _   |
+     * | TRNS | G(Z) | G(X) | G(C) | G(V) |  __  |                    |  __  |  __  |  __  |  __  |  |   |  _   |
      * `------------------------------------------------\      /------------------------------------------------'
-     *                             | TRNS | TRNS | TRNS |      | TRNS | TRNS | TRNS |
+     *                             | TRNS | TRNS | TRNS |      |  LL  | TRNS | TRNS |
      *                             `--------------------|      |--------------------'
      *                                    | TRNS | TRNS |      | TRNS | TRNS |
      *                                    `-------------/      \-------------'
      */
     [_RAISE] = LAYOUT_split_4x6_5(
-        KC_TILD, KC_EXLM, KC_AT, KC_HASH, KC_DLR, KC_PERC,          KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, KC_DEL,
-         KC_NO, KC_NO, KC_LBRC, KC_RBRC, KC_NO, KC_NO,              KC_NO, KC_P7, KC_P8, KC_P9, KC_NO, KC_PLUS,
-         KC_TRNS, KC_LT, KC_LPRN, KC_RPRN, KC_GT, KC_NO,              KC_NO, KC_P4, KC_P5, KC_P6, KC_MINS, KC_PIPE,
-         KC_TRNS, KC_NO, KC_LCBR, KC_RCBR, KC_NO, KC_NO,              KC_NO, KC_P1, KC_P2, KC_P3, KC_EQL, KC_UNDS,
-                                    KC_TRNS, KC_TRNS, KC_TRNS,      KC_TRNS, KC_TRNS, KC_TRNS,
+        KC_TILD,   KC_EXLM, KC_AT,   KC_HASH, KC_DLR,  KC_PERC,       KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, KC_TRNS,
+        G(KC_TAB), G(KC_Q), G(KC_W), G(KC_F), KC_NO,   KC_NO,         KC_GRV,  KC_LT,   KC_LBRC, KC_RBRC, KC_GT,   KC_EQL,
+        KC_TRNS,   G(KC_A), G(KC_R), G(KC_S), G(KC_T), KC_NO,         KC_NO,   KC_LCBR, KC_LPRN, KC_RPRN, KC_RCBR, KC_PLUS,
+        KC_TRNS,   G(KC_Z), G(KC_X), G(KC_C), G(KC_V), KC_NO,         KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_PIPE, KC_UNDS,
+
+                                    KC_TRNS, KC_TRNS, KC_TRNS,       LLOCK, KC_TRNS, KC_TRNS,
                                             KC_TRNS, KC_TRNS,        KC_TRNS, KC_TRNS
      ),
 
     /* NAV
      * ,-----------------------------------------.                    ,-----------------------------------------.
-     * |  __  |  __  |  __  |  __  |  __  |  __  |                    |  __  |  <<  | PLAY |  >>  |  __  |  __  |
+     * |  __  |  __  |  __  |  __  |  __  |  __  |                    | MUTE |  <<  | PLAY |  >>  | VOLU | TRNS |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-     * |  __  |  __  |  __  |  __  |  __  |  __  |                    |  __  |CMD+<-|  UP  |CMD+->|  __  | PGUP |
+     * | TRNS |  __  |  __  |  __  |  __  |  __  |                    |  __  |  __  |  UP  |  __  | VOLD |  __  |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-     * | TRNS |  __  |  __  |  __  |  __  |  __  |                    |  __  | LEFT | DOWN | RIGHT|  __  | PGDN |
+     * | TRNS |  __  |  __  |  __  |  __  | G({) |                    | G(}) | LEFT | DOWN | RIGHT| PGUP |  __  |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-     * | TRNS |  __  |  __  |  __  |  __  |  __  |                    |  __  | G({) |  __  | G(}) |  __  |  __  |
+     * | TRNS |  __  |  __  |  __  |OPT+<-|CMD+<-|                    |CMD+->|OPT+->|  __  |  __  | PGDN |  __  |
      * `------------------------------------------------\      /------------------------------------------------'
-     *                             | TRNS | TRNS | TRNS |      | TRNS | TRNS | TRNS |
+     *                             | TRNS | TRNS |  LL  |      | TRNS | TRNS | TRNS
      *                             `--------------------|      |--------------------'
      *                                    | TRNS | TRNS |      | TRNS | TRNS |
      *                                    `-------------/      \-------------'
      */
     [_NAV] = LAYOUT_split_4x6_5(
-        KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,               KC_NO, KC_MPRV, KC_MPLY, KC_MNXT, KC_NO, KC_NO,
-        KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,               KC_NO, G(KC_LEFT), KC_UP, G(KC_RIGHT), KC_NO, KC_PGUP,
-        KC_TRNS, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,             KC_NO, KC_LEFT, KC_DOWN, KC_RIGHT, KC_NO, KC_PGDN,
-        KC_TRNS, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,             KC_NO, G(KC_LCBR), KC_NO, G(KC_RCBR), KC_NO, KC_NO,
+        G(C(KC_Q)), KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,               KC_MUTE,     KC_MRWD,     KC_MPLY, KC_MFFD,  KC_VOLU, KC_TRNS,
+        KC_TRNS, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,             KC_NO,       KC_NO,       KC_UP,   KC_NO,    KC_VOLD, KC_NO,
+        KC_TRNS, KC_NO, KC_NO, KC_NO, KC_NO, G(KC_LCBR),        G(KC_RCBR),  KC_LEFT,     KC_DOWN, KC_RIGHT, KC_PGUP, KC_NO,
+        KC_TRNS, KC_NO, KC_NO, KC_NO, A(KC_LEFT), G(KC_LEFT),   G(KC_RIGHT), A(KC_RIGHT), KC_NO,   KC_NO,    KC_PGDN, KC_NO,
 
-                            KC_TRNS, KC_TRNS, KC_TRNS, 		    KC_TRNS, KC_TRNS, KC_TRNS,
+                            KC_TRNS, KC_TRNS, LLOCK, 		    KC_TRNS, KC_TRNS, KC_TRNS,
                                    KC_TRNS, KC_TRNS, 		    KC_TRNS, KC_TRNS
     ),
 
@@ -210,8 +222,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 
 
-#ifdef CONSOLE_ENABLE
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+
+    if (!process_layer_lock(keycode, record, LLOCK)) {
+        return false;
+    }
+
+#   ifdef CONSOLE_ENABLE
     uprintf("KL: kc: 0x%04X, col: %2u, row: %2u, pressed: %u, time: %5u, int: %u, count: %u\n",
          keycode,
          record->event.key.col,
@@ -220,9 +238,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
          record->event.time,
          record->tap.interrupted,
          record->tap.count);
+#   endif
+
     return true;
 }
-#endif
+
 
 
 #ifdef RGB_MATRIX_ENABLE
