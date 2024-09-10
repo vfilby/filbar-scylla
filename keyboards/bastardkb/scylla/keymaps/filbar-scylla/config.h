@@ -1,6 +1,8 @@
 /* Increase the layer count */
 #define DYNAMIC_KEYMAP_LAYER_COUNT 8
 
+#define TAPPING_TERM 200
+
 /* Needed for LED indicators to work across both halves */
 #define SPLIT_LAYER_STATE_ENABLE
 

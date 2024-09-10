@@ -46,6 +46,7 @@ enum scylla_layers {
     _COLEMAK,
     _RAISE,
     _NAV,
+    _SYM,
     _CONF,
 };
 
@@ -53,6 +54,33 @@ enum custom_keycodes {
   LLOCK = SAFE_RANGE,
   // Other custom keys...
 };
+
+
+#define WEBTABL G(KC_LCBR)
+#define WEBTABR G(KC_RCBR)
+#define LOGOUT G(C(KC_Q))
+
+// qwerty home row mods
+#define QW_MH_A LGUI_T(KC_A)
+#define QW_MH_S LALT_T(KC_S)
+#define QW_MH_D LSFT_T(KC_D)
+#define QW_MH_F LCTL_T(KC_F)
+#define QW_MH_J RCTL_T(KC_J)
+#define QW_MH_K RSFT_T(KC_K)
+#define QW_MH_L LALT_T(KC_L)
+#define QW_MH_SCLN RGUI_T(KC_SCLN)
+
+// Left-hand home row mods
+#define CM_MH_Z LGUI_T(KC_Z)
+#define CM_MH_X LALT_T(KC_X)
+#define CM_MH_C LSFT_T(KC_C)
+#define CM_MH_D LCTL_T(KC_D)
+
+// Right-hand home row mods
+#define CM_MH_SLSH RCTL_T(KC_SLSH)
+#define CM_MH_DOT RSFT_T(KC_DOT)
+#define CM_MH_COMM LALT_T(KC_COMM)
+#define CM_MH_H RGUI_T(KC_H)
 
 
 /* Set the default layer.
@@ -75,9 +103,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
      * |LCTRL |  __  |  __  |  __  |  __  |  __  |                    |  __  |  __  |  __  |  __  |  __  |  __  |
      * `------------------------------------------------\      /------------------------------------------------'
-     *                             | BKSP |  SPC | RAISE|      |  NAV | ENT  | CMD  |
+     *                             | BKSP |  SPC | SYM  |      |  NAV | ENT  | SPC  |
      *                             `--------------------|      |--------------------'
-     *                                    | OPT  | CMD  |      | S+CMD| RALT |
+     *                                    | CMD  | RAISE|      | S+CMD| RALT |
      *                                    `-------------/      \-------------'
      */
     [_BASE] = LAYOUT_split_4x6_5(
@@ -86,8 +114,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_LSFT, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,       KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
         KC_LCTL, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,       KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
 
-                        KC_BSPC, KC_SPC, MO(_RAISE),            MO(_NAV), KC_ENT, KC_RSFT,
-                                KC_LOPT, KC_LGUI, 		        KC_RGUI, KC_ROPT
+                        KC_BSPC, KC_SPC, MO(_SYM),            MO(_NAV), KC_ENT, KC_SPC,
+                                KC_LGUI, MO(_RAISE), 		        KC_RGUI, KC_ROPT
     ),
 
     /* QWERTY
@@ -136,7 +164,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_TRNS, KC_1, KC_2, KC_3, KC_4, LT(_CONF, KC_5),             KC_6, KC_7, KC_8, KC_9, KC_0, KC_TRNS,
         KC_TRNS, KC_Q, KC_W, KC_F, KC_P, KC_B, 			              KC_J, KC_L, KC_U, KC_Y, KC_SCLN, KC_MINS,
         KC_TRNS, KC_A, KC_R, KC_S, KC_T, KC_G,                        KC_M, KC_N, KC_E, KC_I, KC_O, KC_QUOT,
-        KC_TRNS, KC_Z, KC_X, KC_C, KC_D, KC_V, 			              KC_K, KC_H, KC_COMM, KC_DOT, KC_SLSH, KC_BSLS,
+        KC_TRNS, CM_MH_Z, CM_MH_X, CM_MH_C, CM_MH_D, KC_V, 			  KC_K, CM_MH_H, CM_MH_COMM, CM_MH_DOT, CM_MH_SLSH, KC_BSLS,
 
                                KC_TRNS, KC_TRNS, KC_TRNS,        KC_TRNS, KC_TRNS, KC_TRNS,
                                         KC_TRNS, KC_TRNS,        KC_TRNS, KC_TRNS
@@ -170,23 +198,23 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     /* NAV
      * ,-----------------------------------------.                    ,-----------------------------------------.
-     * |  __  |  __  |  __  |  __  |  __  |  __  |                    | MUTE |  <<  | PLAY |  >>  | VOLU | TRNS |
+     * |LOGOUT|  __  |  __  |  __  |  __  |  __  |                    | MUTE |  <<  | PLAY |  >>  | VOLU | TRNS |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
      * | TRNS |  __  |  __  |  __  |  __  |  __  |                    |  __  |  __  |  UP  |  __  | VOLD |  __  |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-     * | TRNS |  __  |  __  |  __  |  __  | G({) |                    | G(}) | LEFT | DOWN | RIGHT| PGUP |  __  |
+     * | TRNS |  __  |  __  |  __  |  __  |B TABL|                    |B TABR| LEFT | DOWN | RIGHT| PGUP |  __  |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
      * | TRNS |  __  |  __  |  __  |OPT+<-|CMD+<-|                    |CMD+->|OPT+->|  __  |  __  | PGDN |  __  |
      * `------------------------------------------------\      /------------------------------------------------'
-     *                             | TRNS | TRNS |  LL  |      | TRNS | TRNS | TRNS
+     *                             | TRNS | TRNS |  LL  |      | TRNS | TRNS | TRNS |
      *                             `--------------------|      |--------------------'
      *                                    | TRNS | TRNS |      | TRNS | TRNS |
      *                                    `-------------/      \-------------'
      */
     [_NAV] = LAYOUT_split_4x6_5(
-        G(C(KC_Q)), KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,               KC_MUTE,     KC_MRWD,     KC_MPLY, KC_MFFD,  KC_VOLU, KC_TRNS,
+        LOGOUT, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,              KC_MUTE,     KC_MRWD,     KC_MPLY, KC_MFFD,  KC_VOLU, KC_TRNS,
         KC_TRNS, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,             KC_NO,       KC_NO,       KC_UP,   KC_NO,    KC_VOLD, KC_NO,
-        KC_TRNS, KC_NO, KC_NO, KC_NO, KC_NO, G(KC_LCBR),        G(KC_RCBR),  KC_LEFT,     KC_DOWN, KC_RIGHT, KC_PGUP, KC_NO,
+        KC_TRNS, KC_NO, KC_NO, KC_NO, KC_NO, WEBTABL,           WEBTABR,  KC_LEFT,     KC_DOWN, KC_RIGHT, KC_PGUP, KC_NO,
         KC_TRNS, KC_NO, KC_NO, KC_NO, A(KC_LEFT), G(KC_LEFT),   G(KC_RIGHT), A(KC_RIGHT), KC_NO,   KC_NO,    KC_PGDN, KC_NO,
 
                             KC_TRNS, KC_TRNS, LLOCK, 		    KC_TRNS, KC_TRNS, KC_TRNS,
@@ -195,29 +223,29 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 
 
-    /* CONFIGURATION
+    /* SYM
      * ,-----------------------------------------.                    ,-----------------------------------------.
-     * |  __  |  __  |  __  |  __  |  __  |  __  |                    |CLEAR |  __  |  __  |  __  |  __  |  __  |
+     * |  ~   |  !   |  @   |  #   |  $   |  %   |                    |  ^   |   7  |   8  |   9  |  )   | TRNS |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-     * |  __  |  __  |  __  |  __  |  __  |  __  |                    |  RGB | MOD U| HUE U|  __  |  __  |  __  |
+     * |  __  |  <   |   [  |   ]  |  >   |  __  |                    |  __  |   4  |   5  |   6  |   *  |   -  |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-     * |  __  |  __  |  __  |  __  |  __  |  __  |                    |  __  | MOD D| HUE D|  __  |  __  |  __  |
+     * |  __  |  {   |   (  |   )  |  }   |  __  |                    |  __  |   1  |   2  |   3  |   +  |   =  |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-     * |  __  |  __  |  __  |  __  |  __  |  __  |                    |  __  |  __  |  __  |  __  |  __  |  __  |
+     * |  __  |  __  |  __  |  __  |  __  |  __  |                    |  __  |  __  |   0  |   .  |  ENT |   _  |
      * `------------------------------------------------\      /------------------------------------------------'
-     *                             |  __  |  __  |  __  |      |QWERTY|COLEMK|  __  |
+     *                             | TRNS | TRNS | TRNS |      |  LL  | TRNS | TRNS |
      *                             `--------------------|      |--------------------'
-     *                                    |  __  |  __  |      |  __  |  __  |
+     *                                    | TRNS | TRNS |      | TRNS | TRNS |
      *                                    `-------------/      \-------------'
      */
-    [_CONF] = LAYOUT_split_4x6_5(
-        KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,       QK_CLEAR_EEPROM, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
-        KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,       RGB_TOG, RGB_MOD, RGB_HUI, KC_NO, KC_NO, KC_NO,
-        KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,       KC_NO, RGB_RMOD, RGB_HUD, KC_NO, KC_NO, KC_NO,
-        KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,       KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
+    [_SYM] = LAYOUT_split_4x6_5(
+        KC_TILD,   KC_EXLM, KC_AT,   KC_HASH, KC_DLR,  KC_PERC,     KC_CIRC, KC_7, KC_8, KC_9,   KC_RPRN, KC_TRNS,
+        KC_NO, KC_LT,   KC_LBRC, KC_RBRC, KC_GT, KC_NO,             KC_NO,   KC_4, KC_5, KC_6,   KC_ASTR, KC_MINUS,
+        KC_NO, KC_LCBR, KC_LPRN, KC_RPRN, KC_RCBR, KC_NO,           KC_NO,   KC_1, KC_2, KC_3,   KC_PLUS, KC_EQL,
+        KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,                   KC_NO,   KC_NO, KC_0, KC_DOT, KC_ENT, KC_UNDS,
 
-                            KC_NO, KC_NO, KC_NO, 		DF(_QWERTY), DF(_COLEMAK), KC_NO,
-                                  KC_NO, KC_NO, 		KC_NO, KC_NO
+                        KC_TRNS, KC_TRNS, KC_TRNS,        LLOCK, KC_TRNS, KC_TRNS,
+                                KC_TRNS, KC_TRNS,        KC_TRNS, KC_TRNS
     ),
 };
 
@@ -260,6 +288,8 @@ static HSV _get_hsv_for_layer_index(uint8_t layer) {
             return (HSV){HSV_GREEN};
         case _NAV:
             return (HSV){HSV_AZURE};
+        case _SYM:
+            return (HSV){HSV_WHITE};
         case _CONF:
             return (HSV){HSV_RED};
         case _RAISE:
