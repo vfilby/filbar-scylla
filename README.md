@@ -1,3 +1,7 @@
+
+qmk flash -c -kb splitkb/aurora/lily58 -km filbar
+
+
 # QMK Userspace
 
 This is the QMK Userspace for the Bastard Keyboards keymaps.

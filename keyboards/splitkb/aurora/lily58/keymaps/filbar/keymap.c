@@ -1,6 +1,6 @@
 /*
  *
- *
+ * Inspiration taken from: https://github.com/archydragon/lily-layout/blob/main/qmk_keymap/keymap.c
  * led as a caps indicator: https://discord.com/channels/574598631399751680/574738351836626944/1133073274209841202
  */
 
@@ -8,6 +8,7 @@
 
 #include QMK_KEYBOARD_H
 #include "features/layer_lock.h"
+#include "features/swapper.h"
 
 extern keymap_config_t keymap_config;
 
@@ -25,6 +26,8 @@ enum lily_layers {
 
 enum lily_keycodes {
     LLOCK = SAFE_RANGE,
+    SW_APP,  // Switch app windows (cmd-tab)
+    SW_WIN   // Switch apps        (cmd-`)
 };
 
 
@@ -143,9 +146,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 /* Symbol
  * ,-----------------------------------------.                    ,-----------------------------------------.
- * | TRNS |      |      |      |      |LOGOUT|                    |      |   7  |   8  |   9  |   /  | TRNS |
+ * |SW_WIN|      |      |      |      |LOGOUT|                    |      |   7  |   8  |   9  |   /  | TRNS |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * | TRNS |  <   |   [  |   ]  |  >   |      |                    |      |   4  |   5  |   6  |   *  |   -  |
+ * |SW_APP|  <   |   [  |   ]  |  >   |      |                    |      |   4  |   5  |   6  |   *  |   -  |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
  * |  CW  |  {   |   (  |   )  |  }   |      |-------.    ,-------|      |   1  |   2  |   3  |   +  |   =  |
  * |------+------+------+------+------+------|  TRNS |    | LLOCK |------+------+------+------+------+------|
@@ -157,8 +160,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  */
 
 [_SYM] = LAYOUT(
-    _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, LOGOUT,                     XXXXXXX, KC_7,    KC_8,    KC_9,    KC_SLSH, _______,
-    _______, KC_LT,   KC_LBRC, KC_RBRC, KC_GT,   XXXXXXX,                    KC_NO,   KC_4,    KC_5,    KC_6,    KC_ASTR, KC_MINUS,
+    SW_WIN,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, LOGOUT,                     XXXXXXX, KC_7,    KC_8,    KC_9,    KC_SLSH, _______,
+    SW_APP,  KC_LT,   KC_LBRC, KC_RBRC, KC_GT,   XXXXXXX,                    KC_NO,   KC_4,    KC_5,    KC_6,    KC_ASTR, KC_MINUS,
     CW_TOGG, KC_LCBR, KC_LPRN, KC_RPRN, KC_RCBR, XXXXXXX,                    KC_NO,   KC_1,    KC_2,    KC_3,    KC_PLUS, KC_EQL,
     _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,  LLOCK,   KC_NO,   KC_NO,   KC_0,    KC_DOT,  KC_ENT,  KC_UNDS,
                       _______, _______, _______, _______,                    _______, _______, _______, _______
@@ -166,13 +169,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 /* NAVIGATION
  * ,-----------------------------------------.                    ,-----------------------------------------.
- * | TRNS |      |      |      |      |      |                    | PgUp | |<<  |  ||  |  >>| |      | TRNS |
+ * |      |      |      |      |      |      |                    | PgUp | |<<  |  ||  |  >>| |      | TRNS |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * | TRNS |      | MWLt | MUp  | MWRt |      |                    | PgDn | WordL|  Up  | WordR|      |      |
+ * |      |      | MWLt | MUp  | MWRt |      |                    | PgDn | WordL|  Up  | WordR|      |      |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * | TRNS |  M1  | MLft | MDn  | MRgt | MWUp |-------.    ,-------| TabL | Left | Down | Rght | TabR |      |
+ * |      |  M1  | MLft | MDn  | MRgt | MWUp |-------.    ,-------| TabL | Left | Down | Rght | TabR |      |
  * |------+------+------+------+------+------| MAIN  |    | LLOCK |------+------+------+------+------+------|
- * | TRNS |      |  M1  |  M2  |  M3  | MWDn |-------|    |-------|      | LineB|      | LineE|      |      |
+ * |      |      |  M1  |  M2  |  M3  | MWDn |-------|    |-------|      | LineB|      | LineE|      |      |
  * `-----------------------------------------/      /      \      \-----------------------------------------'
  *                   |     |      |      | /  TRNS /        \ TRNS \  |      |      |      |
  *                   |TRNS | TRNS | TRNS |/       /          \      \ | TRNS | TRNS | TRNS |
@@ -233,11 +236,19 @@ void caps_word_set_user(bool active) {
     }
 }
 
+bool sw_win_active = false;
+bool sw_app_active = false;
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
     if (!process_layer_lock(keycode, record, LLOCK)) {
         return false;
     }
+
+
+    /* there are some glitches...  shift exits, and you need to release SYM between different swaps that use the same mod */
+    update_swapper( &sw_app_active, KC_LGUI, KC_TAB, SW_APP, keycode, record );
+    update_swapper( &sw_win_active, KC_LGUI, KC_GRV, SW_WIN, keycode, record );
 
 
     return true;

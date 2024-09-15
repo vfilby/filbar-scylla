@@ -7,3 +7,4 @@ CONVERT_TO = liatris
 CAPS_WORD_ENABLE = yes
 
 SRC += features/layer_lock.c
+SRC += features/swapper.c
