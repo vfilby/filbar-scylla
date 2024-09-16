@@ -10,6 +10,10 @@
 #include "features/layer_lock.h"
 #include "features/swapper.h"
 
+#ifdef CONSOLE_ENABLE
+#   include "print.h"
+#endif // CONSOLE_ENABLE
+
 extern keymap_config_t keymap_config;
 
 enum lily_layers {
@@ -36,8 +40,8 @@ enum lily_keycodes {
  */
 #define WEBTAB_L G(KC_LCBR)
 #define WEBTAB_R G(KC_RCBR)
-#define LINE_END G(KC_RIGHT)
-#define LINE_BEG G(KC_LEFT)
+#define LN_END G(KC_RIGHT)
+#define LN_BEG G(KC_LEFT)
 #define WORD_R A(KC_RIGHT)
 #define WORD_L A(KC_LEFT)
 #define LOGOUT G(C(KC_Q))
@@ -171,11 +175,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * ,-----------------------------------------.                    ,-----------------------------------------.
  * |      |      |      |      |      |      |                    | PgUp | |<<  |  ||  |  >>| |      | TRNS |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * |      |      | MWLt | MUp  | MWRt |      |                    | PgDn | WordL|  Up  | WordR|      |      |
+ * |      |      | MWLt | MUp  | MWRt |      |                    | PgDn | TabL |  Up  | TabR |      |      |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * |      |  M1  | MLft | MDn  | MRgt | MWUp |-------.    ,-------| TabL | Left | Down | Rght | TabR |      |
+ * |      |  M1  | MLft | MDn  | MRgt | MWUp |-------.    ,-------|      | Left | Down | Rght |      |      |
  * |------+------+------+------+------+------| MAIN  |    | LLOCK |------+------+------+------+------+------|
- * |      |      |  M1  |  M2  |  M3  | MWDn |-------|    |-------|      | LineB|      | LineE|      |      |
+ * |      |      |  M1  |  M2  |  M3  | MWDn |-------|    |-------| LineB| LineB|      | WordR| LineE|      |
  * `-----------------------------------------/      /      \      \-----------------------------------------'
  *                   |     |      |      | /  TRNS /        \ TRNS \  |      |      |      |
  *                   |TRNS | TRNS | TRNS |/       /          \      \ | TRNS | TRNS | TRNS |
@@ -184,10 +188,33 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 [_NAV] = LAYOUT(
     _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    KC_PGUP, KC_MRWD, KC_MPLY, KC_MFFD, XXXXXXX, _______,
-    _______, XXXXXXX, KC_WH_L, KC_MS_U, KC_WH_R, XXXXXXX,                    KC_PGDN, WORD_L,  KC_UP,   WORD_R,  KC_MPRV, XXXXXXX,
-    _______, XXXXXXX, KC_MS_L, KC_MS_D, KC_MS_R, KC_WH_U,                    WEBTAB_L,KC_LEFT, KC_DOWN, KC_RGHT, WEBTAB_R,XXXXXXX,
-    _______, XXXXXXX, KC_BTN1, KC_BTN2, KC_BTN3, KC_WH_D,  KC_TRNS,  LLOCK,  XXXXXXX, LINE_BEG,XXXXXXX, LINE_END,XXXXXXX, XXXXXXX,
+    _______, XXXXXXX, KC_WH_L, KC_MS_U, KC_WH_R, XXXXXXX,                    KC_PGDN, WEBTAB_L,KC_UP,   WEBTAB_R,XXXXXXX, XXXXXXX,
+    _______, XXXXXXX, KC_MS_L, KC_MS_D, KC_MS_R, KC_WH_U,                    XXXXXXX, KC_LEFT, KC_DOWN, KC_RGHT, XXXXXXX, XXXXXXX,
+    _______, XXXXXXX, KC_BTN1, KC_BTN2, KC_BTN3, KC_WH_D,  KC_TRNS,  LLOCK,  LN_BEG,  WORD_L,  XXXXXXX, WORD_R,  LN_END,  XXXXXXX,
                       _______, _______, _______, _______,                    _______, _______, _______, _______
+),
+
+/* RAISE
+ * ,-----------------------------------------.                    ,-----------------------------------------.
+ * |  ~   |  F1  |  F2  |  F3  |  F4  |  F5  |                    |  F6  |  F7  |  F8  |  F9  | F10  |      |
+ * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
+ * |  `   |   !  |   @  |   #  |   $  |   %  |                    |   ^  |   &  |   *  |   (  |   )  |      |
+ * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
+ * |      |      |      |      |      |      |-------.    ,-------|      |      |      |      |      |      |
+ * |------+------+------+------+------+------| BcSp  |    | Shft  |------+------+------+------+------+------|
+ * |      |      |      |      |      |      |-------|    |-------|      |      |      |      |      |      |
+ * `-----------------------------------------/ (SYM) /     \      \-----------------------------------------'
+ *                   |      |      |      | / Space /       \ Entr \  |      |      |      |
+ *                   | LCtl | CMD  |  NAV |/       /         \      \ | RAISE| RAlt | LGUI |
+ *                   `----------------------------'           '------''--------------------'
+ */
+
+[_RAISE] = LAYOUT(
+   KC_TILD, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,                      KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  _______,
+   KC_GRV,  KC_EXLM, KC_AT,   KC_HASH, KC_DLR,  KC_PERC,                    KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, XXXXXXX,
+   _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+   _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_BSPC,  KC_LSFT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+                     KC_LCTL, KC_LGUI, MO(_NAV),LT(_SYM,KC_SPC),            KC_ENT,  MO(_RAISE), KC_RALT, KC_LGUI
 ),
 
 /* ADJUST (never used actually, saved from original config)
@@ -218,6 +245,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 void keyboard_post_init_user(void) {
     default_layer_set(1 << DEFAULT_LAYER );
+
+#   ifdef CONSOLE_ENABLE
+    debug_enable=true;
+    // debug_matrix=true;
+    // debug_keyboard=true;
+    // debug_mouse=true;
+#   endif // CONSOLE_ENABLE
 }
 
 void keyboard_pre_init_user(void) {
@@ -236,8 +270,8 @@ void caps_word_set_user(bool active) {
     }
 }
 
-bool sw_win_active = false;
 bool sw_app_active = false;
+bool sw_win_active = false;
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
