@@ -20,8 +20,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#define QUICK_TAP_TERM 0
+#define QUICK_TAP_TERM 0 /* disable quick tap repeat */
 #define TAPPING_TERM 200
-#define HOLD_ON_OTHER_KEY_PRESS
+#define PERMISSIVE_HOLD
+
+#define AUTO_SHIFT_TIMEOUT 235
+#define RETRO_SHIFT 500  /* Anything held for more than this will not be shifted */
+
 
 

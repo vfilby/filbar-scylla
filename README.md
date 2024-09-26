@@ -1,6 +1,6 @@
 
-qmk flash -c -kb splitkb/aurora/lily58 -km filbar
-
+qmk flash -kb splitkb/aurora/lily58 -km filbar
+qmk flash -kb bastardkb/scylla -km filbar-scylla
 
 # QMK Userspace
 
