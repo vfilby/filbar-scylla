@@ -22,6 +22,7 @@
  /*
   * dynamic layer colour: https://github.com/Bastardkb/bastardkb-qmk/blob/bkb-master/keyboards/bastardkb/dilemma/4x6_4/4x6_4.c#L69-L120
   * Layerlock: https://getreuer.info/posts/keyboards/layer-lock/index.html
+  * swapper: https://github.com/qmk/qmk_firmware/tree/user-keymaps-still-present/users/callum
   *
   * Ideas?
   * Ditch the numpad and use raise for key combos
@@ -31,6 +32,7 @@
 #include QMK_KEYBOARD_H
 #include "quantum.h"
 #include "features/layer_lock.h"
+#include "features/swapper.h"
 
 #ifdef CONSOLE_ENABLE
 #   include "print.h"
@@ -52,35 +54,46 @@ enum scylla_layers {
 
 enum custom_keycodes {
   LLOCK = SAFE_RANGE,
-  // Other custom keys...
+  SW_APP,  // Switch app windows (cmd-tab)
+  SW_WIN   // Switch apps        (cmd-`)
 };
 
 
-#define WEBTABL G(KC_LCBR)
-#define WEBTABR G(KC_RCBR)
+#define WEBTAB_L G(KC_LCBR)
+#define WEBTAB_R G(KC_RCBR)
+#define LN_END G(KC_RIGHT)
+#define LN_BEG G(KC_LEFT)
+#define WORD_R A(KC_RIGHT)
+#define WORD_L A(KC_LEFT)
 #define LOGOUT G(C(KC_Q))
 
-// qwerty home row mods
-#define QW_MH_A LGUI_T(KC_A)
-#define QW_MH_S LALT_T(KC_S)
-#define QW_MH_D LSFT_T(KC_D)
-#define QW_MH_F LCTL_T(KC_F)
-#define QW_MH_J RCTL_T(KC_J)
-#define QW_MH_K RSFT_T(KC_K)
-#define QW_MH_L LALT_T(KC_L)
-#define QW_MH_SCLN RGUI_T(KC_SCLN)
+#define QWERTY DF(_QWERTY)
+#define COLEMK DF(_COLEMAK)
+#define CLEAR QK_CLEAR_EEPROM
 
-// Left-hand home row mods
-#define CM_MH_Z LGUI_T(KC_Z)
-#define CM_MH_X LALT_T(KC_X)
-#define CM_MH_C LSFT_T(KC_C)
-#define CM_MH_D LCTL_T(KC_D)
+// Left-hand home row mods for Colemak
+#define CMH_Z LGUI_T(KC_Z)
+#define CMH_X LALT_T(KC_X)
+#define CMH_C LSFT_T(KC_C)
+#define CMH_D LCTL_T(KC_D)
 
-// Right-hand home row mods
-#define CM_MH_SLSH RCTL_T(KC_SLSH)
-#define CM_MH_DOT RSFT_T(KC_DOT)
-#define CM_MH_COMM LALT_T(KC_COMM)
-#define CM_MH_H RGUI_T(KC_H)
+// Right-hand home row mods for Colemak
+#define CMH_SLSH RGUI_T(KC_SLSH)
+#define CMH_DOT LALT_T(KC_DOT)
+#define CMH_COMM RSFT_T(KC_COMM)
+#define CMH_H RCTL_T(KC_H)
+
+// Left-hand home row mods for Qwerty
+#define QMH_Z LGUI_T(KC_Z)
+#define QMH_X LALT_T(KC_X)
+#define QMH_C LSFT_T(KC_C)
+#define QMH_V LCTL_T(KC_V)
+
+// Right-hand home row mods for Qwerty
+#define QMH_M RGUI_T(KC_M)
+#define QMH_N RCTL_T(KC_N)
+#define QMH_COMM RSFT_T(KC_COMM)
+#define QMH_DOT LALT_T(KC_DOT)
 
 
 /* Set the default layer.
@@ -95,7 +108,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     /* BASE
      * ,-----------------------------------------.                    ,-----------------------------------------.
-     * | ESC  |  __  |  __  |  __  |  __  |  __  |                    |  __  |  __  |  __  |  __  |  __  |  <-  |
+     * | ESC  |   1  |   2  |   3  |   4  |   5  |                    |   6  |   7  |   8  |   9  |   0  |   =  |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
      * | Tab  |  __  |  __  |  __  |  __  |  __  |                    |  __  |  __  |  __  |  __  |  __  |  __  |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
@@ -103,19 +116,19 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
      * |LCTRL |  __  |  __  |  __  |  __  |  __  |                    |  __  |  __  |  __  |  __  |  __  |  __  |
      * `------------------------------------------------\      /------------------------------------------------'
-     *                             | BKSP |  SPC | SYM  |      |  NAV | ENT  | SPC  |
+     *                             | BKSP |SPC/SY|  NAV |      | RAISE| ENT  | BKSP |
      *                             `--------------------|      |--------------------'
-     *                                    | CMD  | RAISE|      | S+CMD| RALT |
+     *                                    | CMD  | BKSP |      | S+CMD| RALT |
      *                                    `-------------/      \-------------'
      */
     [_BASE] = LAYOUT_split_4x6_5(
-        QK_GESC, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,       KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_BSPC,
-        KC_TAB,  KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,       KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
-        KC_LSFT, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,       KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
-        KC_LCTL, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,       KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
+        QK_GESC, KC_1,    KC_2,    KC_3,    KC_4,    LT(_CONF, KC_5),            KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_EQL,
+        KC_TAB,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+        KC_LSFT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+        KC_LCTL, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
 
-                        KC_BSPC, KC_SPC, MO(_SYM),            MO(_NAV), KC_ENT, KC_SPC,
-                                KC_LGUI, MO(_RAISE), 		        KC_RGUI, KC_ROPT
+                                   KC_BSPC, LT(_SYM,KC_SPC),  MO(_NAV),          MO(_RAISE),KC_ENT, KC_BSPC,
+                                            KC_LGUI,  KC_BSPC, 		             KC_RGUI, KC_ROPT
     ),
 
     /* QWERTY
@@ -135,13 +148,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      */
 
     [_QWERTY] = LAYOUT_split_4x6_5(
-        KC_TRNS, KC_1, KC_2, KC_3, KC_4, LT(_CONF, KC_5),         KC_6, KC_7, KC_8, KC_9, KC_0, KC_TRNS,
-        KC_TRNS, KC_Q, KC_W, KC_E, KC_R, KC_T, 			          KC_Y, KC_U, KC_I, KC_O, KC_P, KC_MINS,
-        KC_TRNS, KC_A, KC_S, KC_D, KC_F, KC_G, 			          KC_H, KC_J, KC_K, KC_L, KC_SCLN, KC_QUOT,
-        KC_TRNS, KC_Z, KC_X, KC_C, KC_V, KC_B, 			          KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH, KC_RGUI,
-
-                        KC_TRNS, KC_TRNS, KC_TRNS,      KC_TRNS, KC_TRNS, KC_TRNS,
-                                KC_TRNS, KC_TRNS,        KC_TRNS, KC_TRNS
+        _______, _______, _______, _______, _______, _______,                    _______, _______, _______, _______, _______, _______,
+        _______, KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                       KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_MINS,
+        _______, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,                       KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,
+        _______, QMH_Z,   QMH_X,   QMH_C,   QMH_V,   KC_B,                       QMH_N,   QMH_M,   QMH_COMM,QMH_DOT, KC_SLSH, KC_BSLS,
+                                   KC_TRNS, KC_TRNS, KC_TRNS,                    KC_TRNS, KC_TRNS, KC_TRNS,
+                                            KC_TRNS, KC_TRNS,                    KC_TRNS, KC_TRNS
     ),
 
 
@@ -161,25 +173,24 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      *                                    `-------------/      \-------------'
      */
     [_COLEMAK] = LAYOUT_split_4x6_5(
-        KC_TRNS, KC_1, KC_2, KC_3, KC_4, LT(_CONF, KC_5),             KC_6, KC_7, KC_8, KC_9, KC_0, KC_TRNS,
-        KC_TRNS, KC_Q, KC_W, KC_F, KC_P, KC_B, 			              KC_J, KC_L, KC_U, KC_Y, KC_SCLN, KC_MINS,
-        KC_TRNS, KC_A, KC_R, KC_S, KC_T, KC_G,                        KC_M, KC_N, KC_E, KC_I, KC_O, KC_QUOT,
-        KC_TRNS, CM_MH_Z, CM_MH_X, CM_MH_C, CM_MH_D, KC_V, 			  KC_K, CM_MH_H, CM_MH_COMM, CM_MH_DOT, CM_MH_SLSH, KC_BSLS,
-
-                               KC_TRNS, KC_TRNS, KC_TRNS,        KC_TRNS, KC_TRNS, KC_TRNS,
-                                        KC_TRNS, KC_TRNS,        KC_TRNS, KC_TRNS
+        _______, _______, _______, _______, _______, _______,                    _______, _______, _______, _______, _______, _______,
+        _______, KC_Q,    KC_W,    KC_F,    KC_P,    KC_B,                       KC_J,    KC_L,    KC_U,    KC_Y,    KC_SCLN, KC_MINS,
+        _______, KC_A,    KC_R,    KC_S,    KC_T,    KC_G,                       KC_M,    KC_N,    KC_E,    KC_I,    KC_O,    KC_QUOT,
+        _______, CMH_Z,   CMH_X,   CMH_C,   CMH_D,   KC_V,                       KC_K,    CMH_H,   CMH_COMM,CMH_DOT, CMH_SLSH,KC_BSLS,
+                                   KC_TRNS, KC_TRNS, KC_TRNS,                    KC_TRNS, KC_TRNS, KC_TRNS,
+                                            KC_TRNS, KC_TRNS,                    KC_TRNS, KC_TRNS
     ),
 
 
     /* RAISE
      * ,-----------------------------------------.                    ,-----------------------------------------.
-     * |  ~   |  !   |  @   |  #   |  $   |  %   |                    |  ^   |  &   |  *   |  (   |  )   | TRNS |
+     * |  ~   |  F1  |  F2  |  F3  |  F4  |  F5  |                    |  F6  |  F7  |  F8  |  F9  | F10  |LOGOUT|
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-     * |G(TAB)| G(Q) | G(W) | G(F) |  __  |  __  |                    |   `  |  <   |   [  |   ]  |  >   |  =   |
+     * |  `   |   !  |   @  |   #  |   $  |   %  |                    |   ^  |   &  |   *  |   (  |   )  |      |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-     * | TRNS | G(A) | G(R) | G(S) | G(T) |  __  |                    |  __  |  {   |   (  |   )  |  }   |  +   |
+     * |      |      |      |      |      |      |                    |      |      |      |      |      |      |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-     * | TRNS | G(Z) | G(X) | G(C) | G(V) |  __  |                    |  __  |  __  |  __  |  __  |  |   |  _   |
+     * |      |      |      |      |      |      |                    |      |      |      |      |      |      |
      * `------------------------------------------------\      /------------------------------------------------'
      *                             | TRNS | TRNS | TRNS |      |  LL  | TRNS | TRNS |
      *                             `--------------------|      |--------------------'
@@ -187,24 +198,24 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      *                                    `-------------/      \-------------'
      */
     [_RAISE] = LAYOUT_split_4x6_5(
-        KC_TILD,   KC_EXLM, KC_AT,   KC_HASH, KC_DLR,  KC_PERC,       KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, KC_TRNS,
-        G(KC_TAB), G(KC_Q), G(KC_W), G(KC_F), KC_NO,   KC_NO,         KC_GRV,  KC_LT,   KC_LBRC, KC_RBRC, KC_GT,   KC_EQL,
-        KC_TRNS,   G(KC_A), G(KC_R), G(KC_S), G(KC_T), KC_NO,         KC_NO,   KC_LCBR, KC_LPRN, KC_RPRN, KC_RCBR, KC_PLUS,
-        KC_TRNS,   G(KC_Z), G(KC_X), G(KC_C), G(KC_V), KC_NO,         KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_PIPE, KC_UNDS,
+        KC_TILD, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,                      KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  LOGOUT,
+        KC_GRV,  KC_EXLM, KC_AT,   KC_HASH, KC_DLR,  KC_PERC,                    KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, XXXXXXX,
+        _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+        _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
 
-                                    KC_TRNS, KC_TRNS, KC_TRNS,       LLOCK, KC_TRNS, KC_TRNS,
-                                            KC_TRNS, KC_TRNS,        KC_TRNS, KC_TRNS
+                                   _______, _______, _______,                    LLOCK, _______, _______,
+                                            _______, _______,                    _______, _______
      ),
 
     /* NAV
      * ,-----------------------------------------.                    ,-----------------------------------------.
-     * |LOGOUT|  __  |  __  |  __  |  __  |  __  |                    | MUTE |  <<  | PLAY |  >>  | VOLU | TRNS |
+     * |      |      |      |      |      |      |                    | PgUp | |<<  |  ||  |  >>| | VOLU | TRNS |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-     * | TRNS |  __  |  __  |  __  |  __  |  __  |                    |  __  |  __  |  UP  |  __  | VOLD |  __  |
+     * |      |      | MWLt | MUp  | MWRt |      |                    | PgDn | TabL |  Up  | TabR | VOLD |      |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-     * | TRNS |  __  |  __  |  __  |  __  |B TABL|                    |B TABR| LEFT | DOWN | RIGHT| PGUP |  __  |
+     * |      |  M1  | MLft | MDn  | MRgt | MWUp |                    |      | Left | Down | Rght |      |      |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-     * | TRNS |  __  |  __  |  __  |OPT+<-|CMD+<-|                    |CMD+->|OPT+->|  __  |  __  | PGDN |  __  |
+     * |      |      |  M1  |  M2  |  M3  | MWDn |                    | LineB| LineB|      | WordR| LineE|      |
      * `------------------------------------------------\      /------------------------------------------------'
      *                             | TRNS | TRNS |  LL  |      | TRNS | TRNS | TRNS |
      *                             `--------------------|      |--------------------'
@@ -212,26 +223,26 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      *                                    `-------------/      \-------------'
      */
     [_NAV] = LAYOUT_split_4x6_5(
-        LOGOUT, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,              KC_MUTE,     KC_MRWD,     KC_MPLY, KC_MFFD,  KC_VOLU, KC_TRNS,
-        KC_TRNS, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,             KC_NO,       KC_NO,       KC_UP,   KC_NO,    KC_VOLD, KC_NO,
-        KC_TRNS, KC_NO, KC_NO, KC_NO, KC_NO, WEBTABL,           WEBTABR,  KC_LEFT,     KC_DOWN, KC_RIGHT, KC_PGUP, KC_NO,
-        KC_TRNS, KC_NO, KC_NO, KC_NO, A(KC_LEFT), G(KC_LEFT),   G(KC_RIGHT), A(KC_RIGHT), KC_NO,   KC_NO,    KC_PGDN, KC_NO,
+        _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    KC_PGUP, KC_MRWD, KC_MPLY, KC_MFFD, KC_VOLU, XXXXXXX,
+        _______, XXXXXXX, KC_WH_L, KC_MS_U, KC_WH_R, XXXXXXX,                    KC_PGDN, WEBTAB_L,KC_UP,   WEBTAB_R,KC_VOLD, XXXXXXX,
+        _______, XXXXXXX, KC_MS_L, KC_MS_D, KC_MS_R, KC_WH_U,                    XXXXXXX, KC_LEFT, KC_DOWN, KC_RGHT, XXXXXXX, XXXXXXX,
+        _______, XXXXXXX, KC_BTN1, KC_BTN2, KC_BTN3, KC_WH_D,                    LN_BEG,  WORD_L,  XXXXXXX, WORD_R,  LN_END,  XXXXXXX,
 
-                            KC_TRNS, KC_TRNS, LLOCK, 		    KC_TRNS, KC_TRNS, KC_TRNS,
-                                   KC_TRNS, KC_TRNS, 		    KC_TRNS, KC_TRNS
+                                   _______, _______, LLOCK, 		             _______, _______, _______,
+                                            _______, _______, 		             _______, _______
     ),
 
 
 
     /* SYM
      * ,-----------------------------------------.                    ,-----------------------------------------.
-     * |  ~   |  !   |  @   |  #   |  $   |  %   |                    |  ^   |   7  |   8  |   9  |  )   | TRNS |
+     * |SW_WIN|      |      |      |      |LOGOUT|                    |      |      |      |      |   /  | TRNS |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-     * |  __  |  <   |   [  |   ]  |  >   |  __  |                    |  __  |   4  |   5  |   6  |   *  |   -  |
+     * |SW_APP|  <   |   [  |   ]  |  >   |      |                    |      |   7  |   8  |   9  |   *  |   -  |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-     * |  __  |  {   |   (  |   )  |  }   |  __  |                    |  __  |   1  |   2  |   3  |   +  |   =  |
+     * |  CW  |  {   |   (  |   )  |  }   |      |                    |   .  |   4  |   5  |   6  |   +  |   =  |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-     * |  __  |  __  |  __  |  __  |  __  |  __  |                    |  __  |  __  |   0  |   .  |  ENT |   _  |
+     * | TRNS |      |      |      |      |      |                    |      |   1  |   2  |   3  |   0  |   _  |
      * `------------------------------------------------\      /------------------------------------------------'
      *                             | TRNS | TRNS | TRNS |      |  LL  | TRNS | TRNS |
      *                             `--------------------|      |--------------------'
@@ -239,23 +250,76 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      *                                    `-------------/      \-------------'
      */
     [_SYM] = LAYOUT_split_4x6_5(
-        KC_TILD,   KC_EXLM, KC_AT,   KC_HASH, KC_DLR,  KC_PERC,     KC_CIRC, KC_7, KC_8, KC_9,   KC_RPRN, KC_TRNS,
-        KC_NO, KC_LT,   KC_LBRC, KC_RBRC, KC_GT, KC_NO,             KC_NO,   KC_4, KC_5, KC_6,   KC_ASTR, KC_MINUS,
-        KC_NO, KC_LCBR, KC_LPRN, KC_RPRN, KC_RCBR, KC_NO,           KC_NO,   KC_1, KC_2, KC_3,   KC_PLUS, KC_EQL,
-        KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,                   KC_NO,   KC_NO, KC_0, KC_DOT, KC_ENT, KC_UNDS,
+        SW_WIN,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, LOGOUT,                     XXXXXXX, KC_NO,   KC_NO,   KC_NO,   KC_SLSH, _______,
+        SW_APP,  KC_LT,   KC_LBRC, KC_RBRC, KC_GT,   XXXXXXX,                    KC_NO,   KC_7,    KC_8,    KC_9,    KC_ASTR, KC_MINUS,
+        CW_TOGG, KC_LCBR, KC_LPRN, KC_RPRN, KC_RCBR, XXXXXXX,                    KC_DOT,  KC_4,    KC_5,    KC_6,    KC_PLUS, KC_EQL,
+        _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    KC_NO,   KC_1,    KC_2,    KC_3,    KC_0,    KC_UNDS,
 
-                        KC_TRNS, KC_TRNS, KC_TRNS,        LLOCK, KC_TRNS, KC_TRNS,
-                                KC_TRNS, KC_TRNS,        KC_TRNS, KC_TRNS
+                                   _______, _______, _______,                    LLOCK, _______, _______,
+                                            _______, _______,                    _______, _______
+    ),
+
+    /* CONFIG
+     * ,-----------------------------------------.                    ,-----------------------------------------.
+     * |      |      |      |      |      |      |                    |      |      |      |      |      |      |
+     * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
+     * |      |      |      |      |      |      |                    |  RGB | MOD U| HUE U|      |      |      |
+     * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
+     * |      |      |      |      |      |      |                    |      | MOD D| HUE D|      |      |      |
+     * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
+     * |      |      |      |      |      |      |                    |      |      |      |      |      |      |
+     * `------------------------------------------------\      /------------------------------------------------'
+     *                             |  __  |  __  |  __  |      |  __  |  __  |  __  |
+     *                             `--------------------|      |--------------------'
+     *                                    |  __  |  __  |      |  __  |  __  |
+     *                                    `-------------/      \-------------'
+     */
+    [_CONF] = LAYOUT_split_4x6_5(
+        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, AS_UP,   DT_UP,
+        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    RGB_TOG, RGB_MOD, RGB_HUI, XXXXXXX, AS_DOWN, DT_DOWN,
+        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    XXXXXXX, RGB_RMOD,RGB_HUD, XXXXXXX, AS_RPT,  DT_PRNT,
+        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+
+                                   _______, _______, _______,                    _______, _______, _______,
+                                            _______, _______,                    _______, _______
     ),
 };
 
 
+/* This is needed to handle retro shift for the tap-hold mods on the home (or lower) row
+ * Without this they will not be shifted.
+ *
+ * This is used in conjuntion with auto shift (rules.mk) and retro_shift must be configured
+ * to a value in config.h.  When tapping and holding a home-row mod, if you hold it and
+ * release longer than the auto shift timeout, but less than the retro shift timeout then you
+ * will get the shifted tap key.  If you hold it longer than retro-shift timeout you will get
+ * not shifted keystroke and the mod will be held until you release (great for ctrl clicks or such)
+ *
+ * Note the default function calls this one and can be found here: https://docs.qmk.fm/features/auto_shift#auto-shift-per-key
+ */
+bool get_custom_auto_shifted_key(uint16_t keycode, keyrecord_t *record) {
+
+    // Is this a tap and hold mod that wasn't used?
+    if (IS_RETRO(keycode))
+        return true;
+
+    return false;
+}
+
+
+
+bool sw_app_active = false;
+bool sw_win_active = false;
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
     if (!process_layer_lock(keycode, record, LLOCK)) {
         return false;
     }
+
+    /* there are some glitches...  shift exits, and you need to release SYM between different swaps that use the same mod */
+    update_swapper( &sw_app_active, KC_LGUI, KC_TAB, SW_APP, keycode, record );
+    update_swapper( &sw_win_active, KC_LGUI, KC_GRV, SW_WIN, keycode, record );
 
 #   ifdef CONSOLE_ENABLE
     uprintf("KL: kc: 0x%04X, col: %2u, row: %2u, pressed: %u, time: %5u, int: %u, count: %u\n",

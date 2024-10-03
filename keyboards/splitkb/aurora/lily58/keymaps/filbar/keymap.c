@@ -70,10 +70,10 @@ enum lily_keycodes {
 #define QMH_V LCTL_T(KC_V)
 
 // Right-hand home row mods for Qwerty
-#define QMH_M LALT_T(KC_DOT)
-#define QMH_N RSFT_T(KC_COMM)
-#define QMH_COMM RCTL_T(KC_N)
-#define QMH_DOT RGUI_T(KC_M)
+#define QMH_M LALT_T(KC_M)
+#define QMH_N RSFT_T(KC_N)
+#define QMH_COMM RCTL_T(KC_COMM)
+#define QMH_DOT RGUI_T(KC_DOT)
 
 
 
@@ -197,7 +197,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 /* RAISE
  * ,-----------------------------------------.                    ,-----------------------------------------.
- * |  ~   |  F1  |  F2  |  F3  |  F4  |  F5  |                    |  F6  |  F7  |  F8  |  F9  | F10  |      |
+ * |  ~   |  F1  |  F2  |  F3  |  F4  |  F5  |                    |  F6  |  F7  |  F8  |  F9  | F10  | LOUT |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
  * |  `   |   !  |   @  |   #  |   $  |   %  |                    |   ^  |   &  |   *  |   (  |   )  |      |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
@@ -211,7 +211,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  */
 
 [_RAISE] = LAYOUT(
-   KC_TILD, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,                      KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  _______,
+   KC_TILD, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,                      KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  LOGOUT,
    KC_GRV,  KC_EXLM, KC_AT,   KC_HASH, KC_DLR,  KC_PERC,                    KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, XXXXXXX,
    _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
    _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,  LOGOUT,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,

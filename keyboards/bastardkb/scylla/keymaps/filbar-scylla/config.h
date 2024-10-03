@@ -1,7 +1,12 @@
 /* Increase the layer count */
 #define DYNAMIC_KEYMAP_LAYER_COUNT 8
 
+#define QUICK_TAP_TERM 0 /* disable quick tap repeat */
 #define TAPPING_TERM 200
+#define PERMISSIVE_HOLD
+
+#define AUTO_SHIFT_TIMEOUT 235
+#define RETRO_SHIFT 500  /* Anything held for more than this will not be shifted */
 
 /* Needed for LED indicators to work across both halves */
 #define SPLIT_LAYER_STATE_ENABLE

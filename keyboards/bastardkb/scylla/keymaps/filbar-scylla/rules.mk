@@ -11,4 +11,10 @@ CONSOLE_ENABLE = no
 # config layer
 VIA_ENABLE = no
 
+MOUSEKEY_ENABLE = yes
+CAPS_WORD_ENABLE = yes
+AUTO_SHIFT_ENABLE = yes
+DYNAMIC_TAPPING_TERM_ENABLE = yes
+
 SRC += features/layer_lock.c
+SRC += features/swapper.c
