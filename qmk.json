@@ -1,5 +1,5 @@
 {
-    "userspace_version": "1.0",
+    "userspace_version": "1.1",
     "build_targets": [
         ["bastardkb/scylla", "vendor"],
         ["splitkb/aurora/lily58", "vendor"]

@@ -213,9 +213,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
      * |      |      | MWLt | MUp  | MWRt |      |                    | PgDn | TabL |  Up  | TabR | VOLD |      |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-     * |      |  M1  | MLft | MDn  | MRgt | MWUp |                    |      | Left | Down | Rght |      |      |
+     * |      |  M1  | MLft | MDn  | MRgt | MWUp |                    | LineB| Left | Down | Rght | LineE|      |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-     * |      |      |  M1  |  M2  |  M3  | MWDn |                    | LineB| LineB|      | WordR| LineE|      |
+     * |      |      |  M1  |  M2  |  M3  | MWDn |                    |      | LineB|      | WordR|      |      |
      * `------------------------------------------------\      /------------------------------------------------'
      *                             | TRNS | TRNS |  LL  |      | TRNS | TRNS | TRNS |
      *                             `--------------------|      |--------------------'
@@ -223,10 +223,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      *                                    `-------------/      \-------------'
      */
     [_NAV] = LAYOUT_split_4x6_5(
-        _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    KC_PGUP, KC_MRWD, KC_MPLY, KC_MFFD, KC_VOLU, XXXXXXX,
-        _______, XXXXXXX, KC_WH_L, KC_MS_U, KC_WH_R, XXXXXXX,                    KC_PGDN, WEBTAB_L,KC_UP,   WEBTAB_R,KC_VOLD, XXXXXXX,
-        _______, XXXXXXX, KC_MS_L, KC_MS_D, KC_MS_R, KC_WH_U,                    XXXXXXX, KC_LEFT, KC_DOWN, KC_RGHT, XXXXXXX, XXXXXXX,
-        _______, XXXXXXX, KC_BTN1, KC_BTN2, KC_BTN3, KC_WH_D,                    LN_BEG,  WORD_L,  XXXXXXX, WORD_R,  LN_END,  XXXXXXX,
+        _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    KC_PGUP, KC_MRWD, KC_MPLY,  KC_MFFD, KC_VOLU, XXXXXXX,
+        _______, XXXXXXX, KC_WH_L, KC_MS_U, KC_WH_R, XXXXXXX,                    KC_PGDN, WEBTAB_L,  KC_UP, WEBTAB_R, KC_VOLD, XXXXXXX,
+        _______, KC_BTN1, KC_MS_L, KC_MS_D, KC_MS_R, KC_WH_U,                     LN_BEG, KC_LEFT, KC_DOWN,  KC_RGHT,  LN_END, XXXXXXX,
+        _______, XXXXXXX, KC_BTN1, KC_BTN2, KC_BTN3, KC_WH_D,                    XXXXXXX,  WORD_L, XXXXXXX,   WORD_R, XXXXXXX, XXXXXXX,
 
                                    _______, _______, LLOCK, 		             _______, _______, _______,
                                             _______, _______, 		             _______, _______
@@ -445,7 +445,7 @@ void keyboard_post_init_user(void) {
 
 
 #   ifdef CONSOLE_ENABLE
-    debug_enable=true;
+    // debug_enable=true;
     // debug_matrix=true;
     // debug_keyboard=true;
     // debug_mouse=true;
