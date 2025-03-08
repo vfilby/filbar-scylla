@@ -233,16 +233,15 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
 
-
     /* SYM
      * ,-----------------------------------------.                    ,-----------------------------------------.
-     * |SW_WIN|      |      |      |      |LOGOUT|                    |      |      |      |      |   /  | TRNS |
+     * |SW_WIN|      |      |      |      |LOGOUT|                    |      |   7  |   8  |   9  |   /  | TRNS |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-     * |SW_APP|  <   |   [  |   ]  |  >   |      |                    |      |   7  |   8  |   9  |   *  |   -  |
+     * |SW_APP|  <   |   [  |   ]  |  >   |      |                    |      |   4  |   5  |   6  |   *  |   -  |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-     * |  CW  |  {   |   (  |   )  |  }   |      |                    |   .  |   4  |   5  |   6  |   +  |   =  |
+     * |  CW  |  {   |   (  |   )  |  }   |      |                    |      |   1  |   2  |   3  |   +  |   =  |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-     * | TRNS |      |      |      |      |      |                    |      |   1  |   2  |   3  |   0  |   _  |
+     * | TRNS |      |   -  |  '   |   "  |      |                    |      |   0  |   ,  |   .  |      |   _  |
      * `------------------------------------------------\      /------------------------------------------------'
      *                             | TRNS | TRNS | TRNS |      |  LL  | TRNS | TRNS |
      *                             `--------------------|      |--------------------'
@@ -250,10 +249,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      *                                    `-------------/      \-------------'
      */
     [_SYM] = LAYOUT_split_4x6_5(
-        SW_WIN,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, LOGOUT,                     XXXXXXX, KC_NO,   KC_NO,   KC_NO,   KC_SLSH, _______,
-        SW_APP,  KC_LT,   KC_LBRC, KC_RBRC, KC_GT,   XXXXXXX,                    KC_NO,   KC_7,    KC_8,    KC_9,    KC_ASTR, KC_MINUS,
-        CW_TOGG, KC_LCBR, KC_LPRN, KC_RPRN, KC_RCBR, XXXXXXX,                    KC_DOT,  KC_4,    KC_5,    KC_6,    KC_PLUS, KC_EQL,
-        _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    KC_NO,   KC_1,    KC_2,    KC_3,    KC_0,    KC_UNDS,
+        SW_WIN,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, LOGOUT,                     XXXXXXX, KC_7,    KC_8,    KC_9,    KC_ASTR, _______,
+        SW_APP,  KC_LT,   KC_LBRC, KC_RBRC, KC_GT,   XXXXXXX,                    XXXXXXX, KC_4,    KC_5,    KC_6,    KC_PLUS, KC_MINUS,
+        CW_TOGG, KC_LCBR, KC_LPRN, KC_RPRN, KC_RCBR, XXXXXXX,                    XXXXXXX, KC_1,    KC_2,    KC_3,    KC_NO,   KC_EQL,
+        _______, XXXXXXX, KC_MINS, KC_QUOT, KC_DQUO, XXXXXXX,                    XXXXXXX, KC_0,    KC_COMM, KC_DOT,  KC_NO,   KC_UNDS,
 
                                    _______, _______, _______,                    LLOCK, _______, _______,
                                             _______, _______,                    _______, _______
