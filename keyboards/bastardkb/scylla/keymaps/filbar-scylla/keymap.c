@@ -188,7 +188,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
      * |  `   |   !  |   @  |   #  |   $  |   %  |                    |   ^  |   &  |   *  |   (  |   )  |      |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
-     * |      |      |      |      |      |      |                    |      |      |      |      |      |      |
+     * |      |      |      |      |      |      |                    |      |   "  |   '  |   -  |   _  |      |
      * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
      * |      |      |      |      |      |      |                    |      |      |      |      |      |      |
      * `------------------------------------------------\      /------------------------------------------------'
@@ -200,7 +200,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_RAISE] = LAYOUT_split_4x6_5(
         KC_TILD, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,                      KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  LOGOUT,
         KC_GRV,  KC_EXLM, KC_AT,   KC_HASH, KC_DLR,  KC_PERC,                    KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, XXXXXXX,
-        _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+        _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    XXXXXXX, KC_DQUO, KC_QUOT, KC_MINS, KC_UNDS, XXXXXXX,
         _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
 
                                    _______, _______, _______,                    LLOCK, _______, _______,
@@ -225,10 +225,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_NAV] = LAYOUT_split_4x6_5(
         _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    KC_PGUP, KC_MRWD, KC_MPLY,  KC_MFFD, KC_VOLU, XXXXXXX,
         _______, XXXXXXX, KC_WH_L, KC_MS_U, KC_WH_R, XXXXXXX,                    KC_PGDN, WEBTAB_L,  KC_UP, WEBTAB_R, KC_VOLD, XXXXXXX,
-        _______, KC_BTN1, KC_MS_L, KC_MS_D, KC_MS_R, KC_WH_U,                     LN_BEG, KC_LEFT, KC_DOWN,  KC_RGHT,  LN_END, XXXXXXX,
-        _______, XXXXXXX, KC_BTN1, KC_BTN2, KC_BTN3, KC_WH_D,                    XXXXXXX,  WORD_L, XXXXXXX,   WORD_R, XXXXXXX, XXXXXXX,
+        _______, KC_BTN1, KC_MS_L, KC_MS_D, KC_MS_R, KC_WH_U,                    LN_BEG,  KC_LEFT, KC_DOWN,  KC_RGHT,  LN_END, XXXXXXX,
+        _______, XXXXXXX, KC_BTN1, KC_BTN2, KC_BTN3, KC_WH_D,                    XXXXXXX, WORD_L, XXXXXXX,   WORD_R, XXXXXXX, XXXXXXX,
 
-                                   _______, _______, LLOCK, 		             _______, _______, _______,
+                                   _______, _______, _______, 		             LLOCK,   _______, _______,
                                             _______, _______, 		             _______, _______
     ),
 
