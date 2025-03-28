@@ -27,6 +27,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define AUTO_SHIFT_TIMEOUT 235
 #define RETRO_SHIFT 500  /* Anything held for more than this will not be shifted */
 
+/* Needed for LED indicators to work across both halves */
+#define SPLIT_LAYER_STATE_ENABLE
 
 /* RGB Modes */
 #define ENABLE_RGB_MATRIX_NONE
@@ -69,6 +71,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define ENABLE_RGB_MATRIX_STARLIGHT_DUAL_SAT
 #define ENABLE_RGB_MATRIX_RIVERFLOW
 #define ENABLE_RGB_MATRIX_EFFECT_MAX
-
-
 

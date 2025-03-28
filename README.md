@@ -6,4 +6,4 @@ qmk flash -kb bastardkb/scylla -km filbar-scylla
 
 This is the QMK Userspace for the Bastard Keyboards keymaps.
 
-You can read how to compile your own keymap on the official docs here: [https://docs.bastardkb.com/fw/compile-firmware.html](https://docs.bastardkb.com/fw/compile-firmware.html).
+You can read how to compile your own keymap on the official docs here: [https://docs.bastardkb.com/fw/compile-firmware.html](https://docs.bastardkb.com/fw/ccompile-firmware.html).
