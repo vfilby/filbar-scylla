@@ -159,25 +159,25 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 /* Symbol
  * ,-----------------------------------------.                    ,-----------------------------------------.
- * |SW_WIN|      |      |      |      |LOGOUT|                    |      |      |      |      |      | TRNS |
+ * |SW_WIN|      |      |      |      |LOGOUT|                    |      |   "  |   '  |   -  |   _  | TRNS |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * |SW_APP|  <   |   [  |   ]  |  >   |      |                    |   *  |   1  |   2  |   3  |   +  |      |
+ * |SW_APP|  <   |   [  |   ]  |  >   |      |                    |   *  |   7  |   8  |   9  |   +  |      |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
  * |  CW  |  {   |   (  |   )  |  }   |      |-------.    ,-------|   /  |   4  |   5  |   6  |   -  |   =  |
  * |------+------+------+------+------+------|  UNDO |    | REDO  |------+------+------+------+------+------|
- * | TRNS |      |      |      |      |      |-------|    |-------|      |   7  |   8  |   9  |      |   _  |
+ * | TRNS |      |      |      |      |      |-------|    |-------|   .  |   1  |   2  |   3  |   0  |   _  |
  * `-----------------------------------------/       /     \       \----------------------------------------'
  *                   |      |      |      | /  TRNS /       \ TRNS \  |      |      |      |
- *                   | TRNS | TRNS | TRNS |/       /         \      \ | TRNS | TRNS |   0  |
+ *                   | TRNS | TRNS | TRNS |/       /         \      \ | TRNS | TRNS | TRNS |
  *                   `----------------------------'           '------''--------------------'
  */
 
 [_SYM] = LAYOUT(
-    SW_WIN,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, LOGOUT,                     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,
-    SW_APP,  KC_LT,   KC_LBRC, KC_RBRC, KC_GT,   XXXXXXX,                    KC_PAST, KC_1,    KC_2,    KC_3,    KC_PPLS, XXXXXXX,
+    SW_WIN,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, LOGOUT,                     XXXXXXX, KC_DQUO, KC_QUOT, KC_MINS, KC_UNDS, _______,
+    SW_APP,  KC_LT,   KC_LBRC, KC_RBRC, KC_GT,   XXXXXXX,                    KC_PAST, KC_7,    KC_8,    KC_9,    KC_PPLS, XXXXXXX,
     CW_TOGG, KC_LCBR, KC_LPRN, KC_RPRN, KC_RCBR, XXXXXXX,                    KC_PSLS, KC_4,    KC_5,    KC_6,    KC_PMNS, KC_EQL,
-    _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, K_UNDO,   K_REDO,  XXXXXXX, KC_7,    KC_COMM, KC_DOT,  KC_NO,   KC_UNDS,
-                      _______, _______, _______, _______,                    _______, _______, _______, KC_0
+    _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, K_UNDO,   K_REDO,  KC_DOT,  KC_1,    KC_2,    KC_3,    KC_0,    KC_UNDS,
+                      _______, _______, _______, _______,                    _______, _______, _______, _______
 ),
 
 /* NAVIGATION
@@ -209,9 +209,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
  * |  `   |   !  |   @  |   #  |   $  |   %  |                    |   ^  |   &  |   *  |   (  |   )  |      |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * |      |      |      |      |      |      |-------.    ,-------|      |   "  |   '  |   -  |   _  |      |
+ * |      |  {   |   (  |   )  |  }   |      |-------.    ,-------|      |   "  |   '  |   -  |   _  |      |
  * |------+------+------+------+------+------|  TRNS |    | LOGOUT|------+------+------+------+------+------|
- * |      |      |      |      |      |      |-------|    |-------|      |      |      |      |      |      |
+ * |      |  <   |   [  |   ]  |  >   |      |-------|    |-------|      |      |      |      |      |      |
  * `-----------------------------------------/      /      \      \-----------------------------------------'
  *                   |     |      |      |  / TRNS /        \ TRNS \  |      |      |      |
  *                   |TRNS | TRNS | TRNS | /      /          \      \ | TRNS | TRNS | TRNS |
@@ -221,8 +221,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 [_RAISE] = LAYOUT(
    KC_TILD, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,                      KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  LOGOUT,
    KC_GRV,  KC_EXLM, KC_AT,   KC_HASH, KC_DLR,  KC_PERC,                    KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, XXXXXXX,
-   _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    XXXXXXX, KC_DQUO, KC_QUOT, KC_MINS, KC_UNDS, XXXXXXX,
-   _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,  LOGOUT,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+   _______, KC_LCBR, KC_LPRN, KC_RPRN, KC_RCBR, XXXXXXX,                    XXXXXXX, KC_DQUO, KC_QUOT, KC_MINS, KC_UNDS, XXXXXXX,
+   _______, KC_LT,   KC_LBRC, KC_RBRC, KC_GT, XXXXXXX, _______,  LOGOUT,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
                       _______, _______, _______, _______,                    _______, _______, _______, _______
 ),
 
