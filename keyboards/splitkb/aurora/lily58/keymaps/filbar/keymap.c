@@ -25,9 +25,10 @@ enum lily_layers {
     _BASE = 0,
     _COLEMAK,
     _QWERTY,
-    _SYM,
+    _NUMBER,
     _NAV,
     _RAISE,
+    _FUNCTION,
     _CONF,
 };
 
@@ -36,7 +37,11 @@ enum lily_layers {
 enum lily_keycodes {
     LLOCK = SAFE_RANGE,
     SW_APP,  // Switch app windows (cmd-tab)
-    SW_WIN   // Switch apps        (cmd-`)
+    SW_WIN,   // Switch apps        (cmd-`)
+    KC_RD_ARROW,  // ->
+    KC_LD_ARROW,  // <-
+    KC_SCREENSHOT, // cmd+shift+ctrl+4
+    KC_EMDASH    // em dash
 };
 
 
@@ -58,6 +63,7 @@ enum lily_keycodes {
 #define CLEAR QK_CLEAR_EEPROM
 
 #define T_ENTSH LSFT_T(KC_ENT)
+#define T_ENTFUN LT(_FUNCTION, KC_ENT)
 
 // Left-hand home row mods for Colemak
 #define CMH_Z LGUI_T(KC_Z)
@@ -97,21 +103,21 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * | Shft |      |      |      |      |      |-------.    ,-------|      |      |      |      |      |      |
  * |------+------+------+------+------+------|  Entr |    | BcSp  |------+------+------+------+------+------|
  * | CMD  |      |      |      |      |      |-------|    |-------|      |      |      |      |      |      |
- * `-----------------------------------------/ (SYM) /     \      \-----------------------------------------'
+ * `-----------------------------------------/ (SYM) /     \ (NAV)\-----------------------------------------'
  *                   |      |      |      | / Space /       \ Entr \  |      |      |      |
  *                   | LCtl | CMD  | BcSp |/       /         \      \ | RAISE| RAlt | LGUI |
  *                   `----------------------------'           '------''--------------------'
  */
 
 [_BASE] = LAYOUT(
-   QK_GESC, KC_1,    KC_2,    KC_3,    KC_4,    LT(_CONF, KC_5),            KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_BSPC,
-   KC_TAB,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
-   T_ENTSH, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
-   KC_LGUI, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_ENT,   KC_BSPC, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
-                     KC_LCTL, KC_LGUI, KC_BSPC,LT(_SYM,KC_SPC),        LT(_NAV, KC_ENT),  MO(_RAISE), KC_RALT, KC_LGUI
+   QK_GESC, KC_1,    KC_2,    KC_3,    KC_4,    LT(_CONF, KC_5),              KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_BSPC,
+   KC_TAB,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+   T_ENTSH, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+   KC_LGUI, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, T_ENTFUN,   KC_BSPC, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+                     KC_LCTL, KC_LGUI, KC_BSPC,LT(_NUMBER,KC_SPC),          LT(_NAV, KC_ENT),  MO(_RAISE), KC_RALT, KC_LGUI
 ),
 
-/* COLEMAK-dhm)
+/* COLEMAK-dhm
  * ,-----------------------------------------.                    ,-----------------------------------------.
  * | TRNS | TRNS | TRNS | TRNS | TRNS | TRNS |                    | TRNS | TRNS | TRNS | TRNS | TRNS | TRNS |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
@@ -157,50 +163,50 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                       _______, _______, _______, _______,                    _______, _______, _______, _______
 ),
 
-/* Symbol
+/* Numbers
  * ,-----------------------------------------.                    ,-----------------------------------------.
  * |SW_WIN|      |      |      |      |LOGOUT|                    |      |   "  |   '  |   -  |   _  | TRNS |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * |SW_APP|  <   |   [  |   ]  |  >   |      |                    |   *  |   7  |   8  |   9  |   +  |      |
+ * |SW_APP|  ⌘Q  |  ⌘W  |      |      |      |                    |   *  |   7  |   8  |   9  |   +  |      |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * |  CW  |  {   |   (  |   )  |  }   |      |-------.    ,-------|   /  |   4  |   5  |   6  |   -  |   =  |
+ * |  CW  | SelAl| Cut  | Copy | Paste|      |-------.    ,-------|   /  |   4  |   5  |   6  |   -  |   =  |
  * |------+------+------+------+------+------|  UNDO |    | REDO  |------+------+------+------+------+------|
- * | TRNS |      |      |      |      |      |-------|    |-------|   .  |   1  |   2  |   3  |   0  |   _  |
+ * | TRNS |  ⌘   |  ⌥   |  ⇧   |   ^  |      |-------|    |-------|   .  |   1  |   2  |   3  |   0  |      |
  * `-----------------------------------------/       /     \       \----------------------------------------'
  *                   |      |      |      | /  TRNS /       \ TRNS \  |      |      |      |
  *                   | TRNS | TRNS | TRNS |/       /         \      \ | TRNS | TRNS | TRNS |
  *                   `----------------------------'           '------''--------------------'
  */
 
-[_SYM] = LAYOUT(
+[_NUMBER] = LAYOUT(
     SW_WIN,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, LOGOUT,                     XXXXXXX, KC_DQUO, KC_QUOT, KC_MINS, KC_UNDS, _______,
-    SW_APP,  KC_LT,   KC_LBRC, KC_RBRC, KC_GT,   XXXXXXX,                    KC_PAST, KC_7,    KC_8,    KC_9,    KC_PPLS, XXXXXXX,
-    CW_TOGG, KC_LCBR, KC_LPRN, KC_RPRN, KC_RCBR, XXXXXXX,                    KC_PSLS, KC_4,    KC_5,    KC_6,    KC_PMNS, KC_EQL,
-    _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, K_UNDO,   K_REDO,  KC_DOT,  KC_1,    KC_2,    KC_3,    KC_0,    KC_UNDS,
+    SW_APP,  G(KC_Q), G(KC_W), XXXXXXX, XXXXXXX, XXXXXXX,                    KC_PAST, KC_7,    KC_8,    KC_9,    KC_PPLS, XXXXXXX,
+    CW_TOGG, G(KC_A), G(KC_X), G(KC_C), G(KC_V), XXXXXXX,                    KC_PSLS, KC_4,    KC_5,    KC_6,    KC_MINS, KC_EQL,
+    _______, KC_LGUI, KC_LALT, KC_LSFT, KC_LCTL, XXXXXXX, K_UNDO,   K_REDO,  KC_DOT,  KC_1,    KC_2,    KC_3,    KC_0,    XXXXXXX,
                       _______, _______, _______, _______,                    _______, _______, _______, _______
 ),
 
 /* NAVIGATION
  * ,-----------------------------------------.                    ,-----------------------------------------.
- * |      |      |      |      |      |      |                    | PgUp | |<<  |  ||  |  >>| | VOLU | TRNS |
+ * |      |      |  M1  |  M2  |  M3  |      |                    | PgUp | |<<  |  ||  |  >>| | VOLU | TRNS |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
  * |      |      | MWLt | MUp  | MWRt | MWUp |                    | PgDn | TabL |  Up  | TabR | VOLD |      |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
  * |      |  M1  | MLft | MDn  | MRgt | MWDn |-------.    ,-------| LineB| Left | Down | Rght | LineE|      |
  * |------+------+------+------+------+------|       |    | LLOCK |------+------+------+------+------+------|
- * |      |      |  M1  |  M2  |  M3  |      |-------|    |-------|      | LineB|      | WordR|      |      |
+ * |      |  ⌘   |  ⌥   |  ⇧   |   ^  |      |-------|    |-------|      | LineB|      | WordR|      |      |
  * `-----------------------------------------/      /      \      \-----------------------------------------'
- *                   |     |      |      |  / TRNS /        \ TRNS \  |      |      |      |
+ *                   |     |      |      |  / TRNS /        \LLOCK \  |      |      |      |
  *                   |TRNS | TRNS | TRNS | /      /          \      \ | TRNS | TRNS | TRNS |
  *                   `-------------------''------'            '------''--------------------'
  */
 
 [_NAV] = LAYOUT(
-    _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    KC_PGUP, KC_MRWD, KC_MPLY, KC_MFFD, KC_VOLU, _______,
+    _______, XXXXXXX, KC_BTN1, KC_BTN2, KC_BTN3, XXXXXXX,                    KC_PGUP, KC_MRWD, KC_MPLY, KC_MFFD, KC_VOLU, _______,
     _______, XXXXXXX, KC_WH_L, KC_MS_U, KC_WH_R, KC_WH_U,                    KC_PGDN, WEBTAB_L,KC_UP,   WEBTAB_R,KC_VOLD, XXXXXXX,
     _______, KC_BTN1, KC_MS_L, KC_MS_D, KC_MS_R, KC_WH_D,                    LN_BEG,  KC_LEFT, KC_DOWN,  KC_RGHT,  LN_END, XXXXXXX,
-    _______, XXXXXXX, KC_BTN1, KC_BTN2, KC_BTN3, XXXXXXX,  _______,  LLOCK,  XXXXXXX, WORD_L,  XXXXXXX,   WORD_R, XXXXXXX, XXXXXXX,
-                      _______, _______, _______, _______,                    _______, _______, _______, _______
+    _______, KC_LGUI, KC_LALT, KC_LSFT, KC_LCTL, XXXXXXX,  _______,  LLOCK,  XXXXXXX, WORD_L,  XXXXXXX,   WORD_R, XXXXXXX, XXXXXXX,
+                      _______, _______, _______, _______,                    LLOCK, _______, _______, _______
 ),
 
 /* RAISE
@@ -211,7 +217,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
  * |      |  {   |   (  |   )  |  }   |      |-------.    ,-------|      |   "  |   '  |   -  |   _  |      |
  * |------+------+------+------+------+------|  TRNS |    | LOGOUT|------+------+------+------+------+------|
- * |      |  <   |   [  |   ]  |  >   |      |-------|    |-------|      |      |      |      |      |      |
+ * |      |  <   |   [  |   ]  |  >   |      |-------|    |-------|      |   !  |      |      |   ?  |      |
  * `-----------------------------------------/      /      \      \-----------------------------------------'
  *                   |     |      |      |  / TRNS /        \ TRNS \  |      |      |      |
  *                   |TRNS | TRNS | TRNS | /      /          \      \ | TRNS | TRNS | TRNS |
@@ -222,7 +228,30 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
    KC_TILD, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,                      KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  LOGOUT,
    KC_GRV,  KC_EXLM, KC_AT,   KC_HASH, KC_DLR,  KC_PERC,                    KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, XXXXXXX,
    _______, KC_LCBR, KC_LPRN, KC_RPRN, KC_RCBR, XXXXXXX,                    XXXXXXX, KC_DQUO, KC_QUOT, KC_MINS, KC_UNDS, XXXXXXX,
-   _______, KC_LT,   KC_LBRC, KC_RBRC, KC_GT, XXXXXXX, _______,  LOGOUT,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+   _______, KC_LT,   KC_LBRC, KC_RBRC, KC_GT, XXXXXXX, _______,  LOGOUT,    XXXXXXX, KC_EXLM, XXXXXXX, XXXXXXX, KC_QUES, XXXXXXX,
+                      _______, _______, _______, _______,                    _______, _______, _______, _______
+),
+
+/* FUNCTION
+ * ,-----------------------------------------.                    ,-----------------------------------------.
+ * |      |      |      |      |      |      |                    |      |      |      |      |      |      |
+ * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
+ * |      |      |      |      |      |      |                    |PrtScr|  F7  |  F8  |  F9  | F12  |      |
+ * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
+ * |      |      |      |      |      |      |-------.    ,-------|ScrLck|  F4  |  F5  |  F6  | F11  |      |
+ * |------+------+------+------+------+------|       |    |       |------+------+------+------+------+------|
+ * |      |      |      |      |      |      |-------|    |-------|Pause |  F1  |  F2  |  F3  | F10  |      |
+ * `-----------------------------------------/       /     \      \-----------------------------------------'
+ *                   |      |      |      | /       /       \      \  |      |      |      |
+ *                   |      |      |      |/       /         \      \ |      |      |      |
+ *                   `----------------------------'           '------''--------------------'
+ */
+
+[_FUNCTION] = LAYOUT(
+    _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,
+    _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    KC_PSCR, KC_F7,   KC_F8,   KC_F9,   KC_F12,  _______,
+    _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    KC_SCRL, KC_F4,   KC_F5,   KC_F6,   KC_F11,  _______,
+    _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______, _______,  KC_PAUS, KC_F1,   KC_F2,   KC_F3,   KC_F10,  _______,
                       _______, _______, _______, _______,                    _______, _______, _______, _______
 ),
 
@@ -322,7 +351,6 @@ void caps_word_set_user(bool active) {
 bool sw_app_active = false;
 bool sw_win_active = false;
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-
     if (!process_layer_lock(keycode, record, LLOCK)) {
         return false;
     }
@@ -331,6 +359,20 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     update_swapper( &sw_app_active, KC_LGUI, KC_TAB, SW_APP, keycode, record );
     update_swapper( &sw_win_active, KC_LGUI, KC_GRV, SW_WIN, keycode, record );
 
+    // Handle special characters
+    if (record->event.pressed) {
+        switch (keycode) {
+            case KC_RD_ARROW:
+                send_string("->");
+                return false;
+            case KC_LD_ARROW:
+                send_string("<-");
+                return false;
+            case KC_SCREENSHOT:
+                tap_code16(LGUI(LSFT(LCTL(KC_4))));
+                return false;
+        }
+    }
     return true;
 }
 
@@ -348,9 +390,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case _COLEMAK:
             return (HSV){HSV_GREEN};
         case _NAV:
-            return (HSV){HSV_AZURE};
-        case _SYM:
+            return (HSV){HSV_BLUE};
+        case _NUMBER:
             return (HSV){HSV_WHITE};
+        case _FUNCTION:
+            return (HSV){HSV_YELLOW};
         case _CONF:
             return (HSV){HSV_RED};
         case _RAISE:
@@ -405,3 +449,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
     return false;
 }
+
+// Add combo definitions before the keymaps array
+const uint16_t PROGMEM combo_rd_arrow[] = {KC_RIGHT, KC_DOWN, COMBO_END};
+const uint16_t PROGMEM combo_ld_arrow[] = {KC_LEFT, KC_DOWN, COMBO_END};
+const uint16_t PROGMEM combo_screenshot[] = {KC_Q, KC_W, KC_F, KC_P, COMBO_END};
+
+combo_t key_combos[] = {
+    COMBO(combo_rd_arrow, KC_RD_ARROW),
+    COMBO(combo_ld_arrow, KC_LD_ARROW),
+    COMBO(combo_screenshot, KC_SCREENSHOT)
+};

@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define TAPPING_TERM 200
 #define PERMISSIVE_HOLD
 
-#define AUTO_SHIFT_TIMEOUT 235
+#define AUTO_SHIFT_TIMEOUT 215
 #define RETRO_SHIFT 500  /* Anything held for more than this will not be shifted */
 
 /* Needed for LED indicators to work across both halves */
@@ -71,4 +71,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define ENABLE_RGB_MATRIX_STARLIGHT_DUAL_SAT
 #define ENABLE_RGB_MATRIX_RIVERFLOW
 #define ENABLE_RGB_MATRIX_EFFECT_MAX
+
+// Increase combo term to make combos less sensitive
+#define COMBO_TERM 150  // Time window to press combo keys (in milliseconds)
 

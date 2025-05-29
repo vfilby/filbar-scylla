@@ -7,6 +7,7 @@ CONVERT_TO = liatris
 CAPS_WORD_ENABLE = yes
 AUTO_SHIFT_ENABLE = yes
 DYNAMIC_TAPPING_TERM_ENABLE = yes
+COMBO_ENABLE = yes    # Enable combos
 
 # To enable debug messaging via qmk console set to 'yes'
 CONSOLE_ENABLE = no
