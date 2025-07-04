@@ -14,3 +14,4 @@ CONSOLE_ENABLE = no
 
 SRC += features/layer_lock.c
 SRC += features/swapper.c
+SRC += oled.c

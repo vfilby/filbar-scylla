@@ -1,0 +1,173 @@
+# QMK Repository Rules for Cursor
+
+## Code Organization and Structure
+
+### File Naming and Organization
+- Use lowercase with underscores for file names: `my_keyboard.c`, `config.h`
+- Place keyboard-specific files in `keyboards/[vendor]/[keyboard]/`
+- Use descriptive directory names that match the keyboard manufacturer and model
+- Keep keymaps in `keyboards/[vendor]/[keyboard]/keymaps/[keymap_name]/`
+- Store shared code in `users/[username]/` for personal libraries
+
+### Keymap Structure
+- Always include a `keymap.c` file as the main keymap definition
+- Use `config.h` for keymap-specific configuration overrides
+- Include `rules.mk` for keymap-specific feature enables
+- Add `readme.md` documentation for complex keymaps
+- Use descriptive layer names with `enum` declarations
+
+### Code Style
+- Follow QMK's coding standards: 4-space indentation, no tabs
+- Use descriptive variable and function names
+- Keep functions under 50 lines when possible
+- Comment complex logic and non-obvious implementations
+- Use `#pragma once` instead of header guards
+
+## Configuration Management
+
+### Feature Enablement
+- Only enable features you actually use in `rules.mk`
+- Disable unused features to save memory: `MOUSEKEY_ENABLE = no`
+- Use feature-specific config options in `config.h`
+- Document why specific features are enabled/disabled
+- Check memory usage with `qmk compile -km [keymap] --verbose`
+
+### Hardware Configuration
+- Define pin assignments clearly in `config.h`
+- Use descriptive names for custom pins: `#define LED_PIN B5`
+- Document any non-standard wiring or modifications
+- Include electrical specifications in comments
+- Test pin assignments on actual hardware
+
+## Development Workflow
+
+### Before Making Changes
+- Pull latest changes from QMK master branch
+- Create feature branch from master: `git checkout -b feature/my-improvement`
+- Verify current setup compiles: `qmk compile -kb [keyboard] -km [keymap]`
+- Document the intended change in commit messages
+- Check existing issues and PRs for similar work
+
+### Code Changes
+- Make atomic commits with single logical changes
+- Test each commit individually when possible
+- Update documentation when changing behavior
+- Add or update comments for modified functions
+- Maintain backward compatibility when possible
+
+### Testing Requirements
+- Compile test: `qmk compile -kb [keyboard] -km [keymap]`
+- Test on actual hardware before committing
+- Verify all layers and key combinations work
+- Test special features (rotary encoders, RGB, etc.)
+- Check memory usage: `qmk compile -kb [keyboard] -km [keymap] --verbose`
+
+## Building and Compilation
+
+### Local Testing
+- Always test compile before pushing: `qmk compile -kb [keyboard] -km [keymap]`
+- Test with clean build: `qmk clean && qmk compile -kb [keyboard] -km [keymap]`
+- Verify no warnings in compilation output
+- Test multiple keymaps if changes affect keyboard-level code
+- Use `qmk flash` for actual hardware testing
+
+### Memory Management
+- Monitor flash usage: aim to stay under 90% capacity
+- Monitor RAM usage for complex keymaps
+- Use `LTO_ENABLE = yes` for space optimization when needed
+- Remove debug code before final commits
+- Consider `EXTRAKEY_ENABLE = no` if media keys aren't needed
+
+### Cross-Platform Compatibility
+- Test builds on multiple platforms when possible
+- Avoid platform-specific code in keyboard definitions
+- Use QMK's cross-platform APIs for hardware interaction
+- Document any platform-specific requirements
+- Test with different toolchain versions
+
+## Quality Assurance
+
+### Code Review Checklist
+- All functions have clear purposes and names
+- No magic numbers - use defined constants
+- Error handling is present where needed
+- Memory leaks are prevented
+- Code follows QMK conventions
+
+### Documentation Standards
+- Update README.md for new keyboards
+- Document keymap layouts with visual representations
+- Include build instructions and dependencies
+- Document any special setup requirements
+- Add troubleshooting section for complex setups
+
+### Hardware Testing
+- Test all keys register correctly
+- Verify modifier combinations work
+- Test layer switching and sticky keys
+- Confirm RGB/LED functionality if applicable
+- Test rotary encoders and special hardware
+
+## Version Control
+
+### Commit Standards
+- Use conventional commit format: `feat:`, `fix:`, `docs:`, `refactor:`
+- Include keyboard name in commit messages
+- Reference issue numbers when applicable
+- Keep commits focused on single changes
+- Write descriptive commit messages
+
+### Branch Management
+- Use descriptive branch names: `keyboards/vendor/model-feature`
+- Keep branches focused on single features/fixes
+- Rebase onto master before submitting PRs
+- Clean up merged branches promptly
+- Tag stable releases appropriately
+
+## Debugging and Troubleshooting
+
+### Debug Configuration
+- Use `CONSOLE_ENABLE = yes` for debug output
+- Add debug prints with `dprintf()` for troubleshooting
+- Remove debug code before production commits
+- Use `DEBUG_MATRIX_SCAN_RATE` for performance testing
+- Enable bootmagic for emergency reset: `BOOTMAGIC_ENABLE = yes`
+
+### Common Issue Prevention
+- Always test on actual hardware
+- Verify pin assignments match physical wiring
+- Check for conflicting key definitions
+- Ensure sufficient memory for enabled features
+- Test edge cases like rapid key presses
+
+## Performance Optimization
+
+### Efficiency Guidelines
+- Minimize matrix scan rate impact
+- Use efficient algorithms for custom functions
+- Avoid blocking operations in key processing
+- Cache computed values when appropriate
+- Profile memory usage for complex keymaps
+
+### Resource Management
+- Monitor flash memory usage
+- Optimize for RAM usage on constrained MCUs
+- Use appropriate data types (uint8_t vs uint16_t)
+- Minimize global variables
+- Use local variables when possible
+
+## Security and Safety
+
+### Safe Practices
+- Never commit sensitive information
+- Use secure defaults for network features
+- Validate user inputs in custom functions
+- Avoid buffer overflows in string operations
+- Test boundary conditions thoroughly
+
+### Backup and Recovery
+- Keep working firmware backup before major changes
+- Document recovery procedures for bricked boards
+- Test bootloader entry methods
+- Maintain known-good configuration
+- Document emergency reset procedures

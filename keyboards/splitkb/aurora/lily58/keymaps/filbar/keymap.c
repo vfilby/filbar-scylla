@@ -328,7 +328,7 @@ bool get_custom_auto_shifted_key(uint16_t keycode, keyrecord_t *record) {
  * In the future this could also be represented on the LED screens.
  */
 void caps_word_set_user(bool active) {
-    if (active) {
+    if (!active) {
         writePinLow(24);
     } else {
         writePinHigh(24);
