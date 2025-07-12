@@ -10,6 +10,8 @@
 #include QMK_KEYBOARD_H
 #include "features/layer_lock.h"
 #include "features/swapper.h"
+#include "oled.h"
+#include "layers.h"
 
 #ifdef CONSOLE_ENABLE
 #   include "print.h"
@@ -20,17 +22,8 @@
 #endif
 
 extern keymap_config_t keymap_config;
-
-enum lily_layers {
-    _BASE = 0,
-    _COLEMAK,
-    _QWERTY,
-    _NUMBER,
-    _NAV,
-    _RAISE,
-    _FUNCTION,
-    _CONF,
-};
+extern bool oled_sleeping;
+extern uint32_t anim_sleep;
 
 #define DEFAULT_LAYER _COLEMAK
 
@@ -358,6 +351,13 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     /* there are some glitches...  shift exits, and you need to release SYM between different swaps that use the same mod */
     update_swapper( &sw_app_active, KC_LGUI, KC_TAB, SW_APP, keycode, record );
     update_swapper( &sw_win_active, KC_LGUI, KC_GRV, SW_WIN, keycode, record );
+
+    // Call OLED-specific handler (safe when OLED is disabled)
+#ifdef OLED_ENABLE
+    if (!oled_process_record_user(keycode, record)) {
+        return false;
+    }
+#endif
 
     // Handle special characters
     if (record->event.pressed) {

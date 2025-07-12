@@ -8,9 +8,10 @@ CAPS_WORD_ENABLE = yes
 AUTO_SHIFT_ENABLE = yes
 DYNAMIC_TAPPING_TERM_ENABLE = yes
 COMBO_ENABLE = yes    # Enable combos
+WPM_ENABLE = yes
 
 # To enable debug messaging via qmk console set to 'yes'
-CONSOLE_ENABLE = no
+# CONSOLE_ENABLE = no
 
 SRC += features/layer_lock.c
 SRC += features/swapper.c

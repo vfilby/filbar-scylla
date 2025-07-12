@@ -30,6 +30,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /* Needed for LED indicators to work across both halves */
 #define SPLIT_LAYER_STATE_ENABLE
 
+#define SPLIT_WPM_ENABLE
+
 /* RGB Modes */
 #define ENABLE_RGB_MATRIX_NONE
 #define ENABLE_RGB_MATRIX_SOLID_COLOR

@@ -1,30 +1,26 @@
 #include QMK_KEYBOARD_H
+#include "oled.h"
+#include "layers.h"
 
 #ifdef OLED_ENABLE
 
-// Layer definitions to match keymap.c
-enum lily_layers {
-    _BASE = 0,
-    _COLEMAK,
-    _QWERTY,
-    _NUMBER,
-    _NAV,
-    _RAISE,
-    _FUNCTION,
-    _CONF,
-};
+// Animation state variables
+static uint32_t anim_timer = 0;
+uint32_t anim_sleep = 0;
+static uint8_t current_idle_frame = 0;
+static uint8_t current_tap_frame = 0;
+// static uint32_t oled_timeout = OLED_TIMEOUT_MS;  // Unused variable - removed
+static bool anim_initialized = false;
+// static bool is_idle = true;  // Unused variable - removed
+bool oled_sleeping = false;
 
-// Layer names for display
-static const char PROGMEM layer_names[][8] = {
-    "BASE ",
-    "COLEM",
-    "QWERT",
-    "NUMB ",
-    "NAVI ",
-    "RAISE",
-    "FUNCT",
-    "CONF ",
-};
+oled_rotation_t oled_init_user(oled_rotation_t rotation) {
+	if (!is_keyboard_master()) {
+        return OLED_ROTATION_180;
+    } else {
+        return rotation;
+    }
+}
 
 void fb_render_space(void) {
     oled_write_P(PSTR("     "), false);
@@ -162,12 +158,83 @@ void fb_render_mod_status_ctrl_shift(uint8_t modifiers) {
     }
 }
 
+//
+// Render right OLED display animation
+//
+static void render_anim(void) {
+
+    void animation_phase(void) {
+
+        if (get_current_wpm() <= IDLE_SPEED) {
+            current_idle_frame = (current_idle_frame + 1) % IDLE_FRAMES;
+            oled_write_raw_P(idle[current_idle_frame], ANIM_SIZE);
+        }
+
+        if (get_current_wpm() > IDLE_SPEED && get_current_wpm() < TAP_SPEED) {
+            oled_write_raw_P(prep[0], ANIM_SIZE);
+        }
+
+        if (get_current_wpm() >= TAP_SPEED) {
+            current_tap_frame = (current_tap_frame + 1) % TAP_FRAMES;
+            oled_write_raw_P(tap[current_tap_frame], ANIM_SIZE);
+        }
+    }
+
+    // Initialize animation on first call
+    if (!anim_initialized) {
+        anim_timer = timer_read32();
+        anim_sleep = timer_read32();
+        oled_sleeping = false;
+        anim_initialized = true;
+        oled_clear();
+        oled_write_raw_P(idle[0], ANIM_SIZE);
+        return;
+    }
+
+    // Check if we should animate
+    uint8_t wpm = get_current_wpm();
+    if (wpm != 0) {
+        oled_on();
+
+        if (timer_elapsed32(anim_timer) > ANIM_FRAME_DURATION_MS) {
+            anim_timer = timer_read32();
+            animation_phase();
+        }
+        anim_sleep = timer_read32();
+    } else {
+
+        if (timer_elapsed32(anim_sleep) > OLED_TIMEOUT_MS) {
+            //oled_off();
+        } else {
+            if (timer_elapsed32(anim_timer) > ANIM_FRAME_DURATION_MS) {
+                anim_timer = timer_read32();
+                animation_phase();
+            }
+        }
+
+    }
+}
+
 // Custom OLED task function that overrides the default
 bool oled_task_user(void) {
-    if (is_keyboard_master()) {
-        // Clear the display
-        oled_clear();
 
+    // No typing - check if we should sleep
+    // if (timer_elapsed32(anim_sleep) > oled_timeout) {
+    //     oled_off();
+    //     oled_sleeping = true;
+    //     return true;
+    // }
+
+    // if (oled_sleeping) {
+    //     oled_on();
+    //     oled_sleeping = false;
+    // }
+
+
+
+    if (is_keyboard_master()) {
+        oled_clear();
+        // Render modifier status
         fb_render_mod_status_gui_alt(get_mods()|get_oneshot_mods());
         fb_render_mod_status_ctrl_shift(get_mods()|get_oneshot_mods());
 
@@ -183,30 +250,20 @@ bool oled_task_user(void) {
         oled_write_P(layer_names[default_layer], false);
         oled_write_P(PSTR("\n"), false);
 
-
-
-
-        // Show lock keys
-        // oled_write_P(PSTR("Locks: "), false);
-        // led_t led_state = host_keyboard_led_state();
-        // if (led_state.num_lock) {
-        //     oled_write_P(PSTR("NUM "), false);
-        // }
-        // if (led_state.caps_lock) {
-        //     oled_write_P(PSTR("CAPS "), false);
-        // }
-        // if (led_state.scroll_lock) {
-        //     oled_write_P(PSTR("SCR "), false);
-        // }
     } else {
-        // Right half - show simple text
-        oled_clear();
-        oled_write_P(PSTR("Lily58"), false);
-        oled_write_P(PSTR("\n"), false);
-        oled_write_P(PSTR("Right Half"), false);
+        render_anim();
     }
 
     return false;
 }
 
+// OLED-specific process record handler
+bool oled_process_record_user(uint16_t keycode, keyrecord_t *record) {
+    if (record->event.pressed) {
+        anim_sleep = timer_read32();
+    }
+    return true; // Continue processing
+}
+
 #endif // OLED_ENABLE
+
