@@ -25,6 +25,21 @@ extern keymap_config_t keymap_config;
 extern bool oled_sleeping;
 extern uint32_t anim_sleep;
 
+/* Mod hold indicator LED flash
+ * Tracks tap-hold mod keys and flashes LED once when held long enough
+ */
+#define MOD_HOLD_FLASH_THRESHOLD_MS (TAPPING_TERM + 50)  // Flash 50ms after tapping term
+#define MOD_HOLD_FLASH_DURATION_MS 100  // How long to flash the LED
+
+typedef struct {
+    uint16_t keycode;      // The mod keycode being tracked
+    uint32_t press_time;   // When it was pressed
+    bool has_flashed;      // Whether we've already flashed for this press
+} mod_hold_tracker_t;
+
+static mod_hold_tracker_t mod_hold_trackers[8] = {0};  // Track up to 8 mod keys
+static uint8_t mod_hold_count = 0;
+
 #define DEFAULT_LAYER _COLEMAK
 
 enum lily_keycodes {
@@ -328,6 +343,56 @@ void caps_word_set_user(bool active) {
     }
 }
 
+/* Check if a keycode is a tap-hold mod key */
+static bool _is_tap_hold_mod(uint16_t keycode) {
+    // Check for all the homerow mod keycodes
+    return (keycode == CMH_Z || keycode == CMH_X || keycode == CMH_C || keycode == CMH_D ||
+            keycode == CMH_SLSH || keycode == CMH_DOT || keycode == CMH_COMM || keycode == CMH_H ||
+            keycode == QMH_Z || keycode == QMH_X || keycode == QMH_C || keycode == QMH_V ||
+            keycode == QMH_M || keycode == QMH_N || keycode == QMH_COMM || keycode == QMH_DOT);
+}
+
+/* Find or add a mod tracker */
+static mod_hold_tracker_t* _find_mod_tracker(uint16_t keycode) {
+    // First, try to find existing tracker
+    for (uint8_t i = 0; i < mod_hold_count; i++) {
+        if (mod_hold_trackers[i].keycode == keycode) {
+            return &mod_hold_trackers[i];
+        }
+    }
+
+    // If not found and we have space, add a new one
+    if (mod_hold_count < 8) {
+        mod_hold_trackers[mod_hold_count].keycode = keycode;
+        mod_hold_trackers[mod_hold_count].has_flashed = false;
+        mod_hold_trackers[mod_hold_count].press_time = 0;
+        return &mod_hold_trackers[mod_hold_count++];
+    }
+
+    return NULL;
+}
+
+/* Remove a mod tracker */
+static void _remove_mod_tracker(uint16_t keycode) {
+    for (uint8_t i = 0; i < mod_hold_count; i++) {
+        if (mod_hold_trackers[i].keycode == keycode) {
+            // Shift remaining trackers down
+            for (uint8_t j = i; j < mod_hold_count - 1; j++) {
+                mod_hold_trackers[j] = mod_hold_trackers[j + 1];
+            }
+            mod_hold_count--;
+            break;
+        }
+    }
+}
+
+/* Flash the LED once */
+static void _flash_mod_hold_led(void) {
+    // Turn LED on (low is on)
+    writePinLow(24);
+    // We'll turn it off in matrix_scan_user after the duration
+}
+
 /* This handles treating a layer-top as a modifier in some situations.  For example, if you
  * want the SYM layer switch to respond like cmd-tab you will need to register and hold cmd
  * if tab is detected.
@@ -343,6 +408,10 @@ void caps_word_set_user(bool active) {
  */
 bool sw_app_active = false;
 bool sw_win_active = false;
+
+/* Track mod hold state for LED flashing */
+static uint32_t mod_hold_flash_end_time = 0;
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (!process_layer_lock(keycode, record, LLOCK)) {
         return false;
@@ -351,6 +420,27 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     /* there are some glitches...  shift exits, and you need to release SYM between different swaps that use the same mod */
     update_swapper( &sw_app_active, KC_LGUI, KC_TAB, SW_APP, keycode, record );
     update_swapper( &sw_win_active, KC_LGUI, KC_GRV, SW_WIN, keycode, record );
+
+    // Track tap-hold mod keys for LED flashing
+    if (_is_tap_hold_mod(keycode)) {
+        if (record->event.pressed) {
+            // Key pressed - start tracking
+            mod_hold_tracker_t* tracker = _find_mod_tracker(keycode);
+            if (tracker) {
+                tracker->press_time = timer_read32();
+                tracker->has_flashed = false;
+            }
+        } else {
+            // Key released - check if it was held (tap.count == 0 means held, not tapped)
+            if (record->tap.count == 0) {
+                // It was held, remove tracker
+                _remove_mod_tracker(keycode);
+            } else {
+                // It was tapped, remove tracker
+                _remove_mod_tracker(keycode);
+            }
+        }
+    }
 
     // Call OLED-specific handler (safe when OLED is disabled)
 #ifdef OLED_ENABLE
@@ -374,6 +464,42 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         }
     }
     return true;
+}
+
+/* Check mod hold timers and flash LED when threshold is reached */
+void matrix_scan_user(void) {
+    uint32_t now = timer_read32();
+
+    // Check if we need to turn off the flash LED (only if caps word is not active)
+    if (mod_hold_flash_end_time > 0 && now >= mod_hold_flash_end_time) {
+        // Check if caps word is active before turning off LED
+        #ifdef CAPS_WORD_ENABLE
+        if (!is_caps_word_on()) {
+            // Turn LED off (high is off)
+            writePinHigh(24);
+        }
+        #else
+        // Turn LED off (high is off)
+        writePinHigh(24);
+        #endif
+        mod_hold_flash_end_time = 0;
+    }
+
+    // Check all tracked mod keys
+    for (uint8_t i = 0; i < mod_hold_count; i++) {
+        mod_hold_tracker_t* tracker = &mod_hold_trackers[i];
+
+        if (!tracker->has_flashed && tracker->press_time > 0) {
+            uint32_t hold_duration = timer_elapsed32(tracker->press_time);
+
+            // If held long enough, flash the LED once
+            if (hold_duration >= MOD_HOLD_FLASH_THRESHOLD_MS) {
+                _flash_mod_hold_led();
+                tracker->has_flashed = true;
+                mod_hold_flash_end_time = now + MOD_HOLD_FLASH_DURATION_MS;
+            }
+        }
+    }
 }
 
 
