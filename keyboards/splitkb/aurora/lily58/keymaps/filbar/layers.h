@@ -15,12 +15,12 @@ enum lily_layers {
 };
 
 // Layer names for display
-static const char PROGMEM layer_names[][8] = {
+static const char PROGMEM layer_names[][6] = {
     "BASE ",
     "COLEM",
     "QWERT",
     "NUMB ",
-    "NAVI ",
+    "NAV  ",
     "RAISE",
     "FUNCT",
     "CONF ",

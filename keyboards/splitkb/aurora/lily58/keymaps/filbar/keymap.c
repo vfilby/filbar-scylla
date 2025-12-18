@@ -158,7 +158,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 /* Numbers
  * ,-----------------------------------------.                    ,-----------------------------------------.
- * |SW_WIN|      |      |      |      |LOGOUT|                    |      |   (  |      |   )  |   _  | TRNS |
+ * |SW_WIN|      |      |      |      |LOGOUT|                    |      |   (  |   :  |   )  |   _  | TRNS |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
  * |SW_APP|  ⌘Q  |  ⌘W  |      |      |      |                    |   *  |   7  |   8  |   9  |   +  |      |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
@@ -172,7 +172,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  */
 
 [_NUMBER] = LAYOUT(
-    SW_WIN,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, LOGOUT,                     XXXXXXX, KC_LPRN, XXXXXXX, KC_RPRN, KC_UNDS, _______,
+    SW_WIN,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, LOGOUT,                     XXXXXXX, KC_LPRN, KC_COLN, KC_RPRN, KC_UNDS, _______,
     SW_APP,  G(KC_Q), G(KC_W), XXXXXXX, XXXXXXX, XXXXXXX,                    KC_PAST, KC_7,    KC_8,    KC_9,    KC_PPLS, XXXXXXX,
     CW_TOGG, G(KC_A), G(KC_X), G(KC_C), G(KC_V), XXXXXXX,                    KC_PSLS, KC_4,    KC_5,    KC_6,    KC_MINS, KC_EQL,
     _______, KC_LGUI, KC_LALT, KC_LSFT, KC_LCTL, XXXXXXX, K_UNDO,   K_REDO,  KC_DOT,  KC_1,    KC_2,    KC_3,    KC_0,    XXXXXXX,
@@ -187,7 +187,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
  * |      |  M1  | MLft | MDn  | MRgt | MWDn |-------.    ,-------| LineB| Left | Down | Rght | LineE|      |
  * |------+------+------+------+------+------|       |    | LLOCK |------+------+------+------+------+------|
- * |      |  ⌘   |  ⌥   |  ⇧   |   ^  |      |-------|    |-------|      | LineB|      | WordR|      |      |
+ * |      |  ⌘   |  ⌥   |  ⇧   |   ^  |      |-------|    |-------|      | WordL|      | WordR|  ^←  |  ^→  |
  * `-----------------------------------------/      /      \      \-----------------------------------------'
  *                   |     |      |      |  / TRNS /        \LLOCK \  |      |      |      |
  *                   |TRNS | TRNS | TRNS | /      /          \      \ | TRNS | TRNS | TRNS |
@@ -195,10 +195,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  */
 
 [_NAV] = LAYOUT(
-    _______, XXXXXXX, KC_BTN1, KC_BTN2, KC_BTN3, XXXXXXX,                    KC_PGUP, KC_MRWD, KC_MPLY, KC_MFFD, KC_VOLU, _______,
-    _______, XXXXXXX, KC_WH_L, KC_MS_U, KC_WH_R, KC_WH_U,                    KC_PGDN, WEBTAB_L,KC_UP,   WEBTAB_R,KC_VOLD, XXXXXXX,
-    _______, KC_BTN1, KC_MS_L, KC_MS_D, KC_MS_R, KC_WH_D,                    LN_BEG,  KC_LEFT, KC_DOWN,  KC_RGHT,  LN_END, XXXXXXX,
-    _______, KC_LGUI, KC_LALT, KC_LSFT, KC_LCTL, XXXXXXX,  _______,  LLOCK,  XXXXXXX, WORD_L,  XXXXXXX,   WORD_R, XXXXXXX, XXXXXXX,
+    _______, XXXXXXX, KC_BTN1, KC_BTN2, KC_BTN3, XXXXXXX,                    KC_PGUP, KC_MRWD, KC_MPLY, KC_MFFD,  KC_VOLU, _______,
+    _______, XXXXXXX, KC_WH_L, KC_MS_U, KC_WH_R, KC_WH_U,                    KC_PGDN, WEBTAB_L,KC_UP,   WEBTAB_R, KC_VOLD, XXXXXXX,
+    _______, KC_BTN1, KC_MS_L, KC_MS_D, KC_MS_R, KC_WH_D,                    LN_BEG,  KC_LEFT, KC_DOWN, KC_RGHT,  LN_END,  XXXXXXX,
+    _______, KC_LGUI, KC_LALT, KC_LSFT, KC_LCTL, XXXXXXX,  _______,  LLOCK,  XXXXXXX, WORD_L,  XXXXXXX, WORD_R,   C(KC_LEFT), C(KC_RIGHT),
                       _______, _______, _______, _______,                    LLOCK, _______, _______, _______
 ),
 
