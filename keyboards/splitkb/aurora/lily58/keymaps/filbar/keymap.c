@@ -28,8 +28,8 @@ extern uint32_t anim_sleep;
 /* Mod hold indicator LED flash
  * Tracks tap-hold mod keys and flashes LED once when held long enough
  */
-#define MOD_HOLD_FLASH_THRESHOLD_MS (TAPPING_TERM + 50)  // Flash 50ms after tapping term
-#define MOD_HOLD_FLASH_DURATION_MS 100  // How long to flash the LED
+#define MOD_HOLD_FLASH_THRESHOLD_MS (TAPPING_TERM)  // Flash 50ms after tapping term
+#define MOD_HOLD_FLASH_DURATION_MS 50  // How long to flash the LED
 
 typedef struct {
     uint16_t keycode;      // The mod keycode being tracked
@@ -39,6 +39,8 @@ typedef struct {
 
 static mod_hold_tracker_t mod_hold_trackers[8] = {0};  // Track up to 8 mod keys
 static uint8_t mod_hold_count = 0;
+static bool caps_word_active = false;  // Track caps word state for LED management
+static uint32_t mod_hold_flash_end_time = 0;  // When the mod hold flash should end
 
 #define DEFAULT_LAYER _COLEMAK
 
@@ -331,16 +333,32 @@ bool get_custom_auto_shifted_key(uint16_t keycode, keyrecord_t *record) {
     return false;
 }
 
+/* Update LED state based on caps word and mod hold flash */
+static void _update_led_state(void) {
+    // If mod hold flash is active, LED is controlled by flash
+    if (mod_hold_flash_end_time > 0) {
+        // Flash is active, LED should be on (low = on)
+        writePinLow(24);
+    } else {
+        // No flash active, set LED based on caps word state
+        // LED pin 24 is inverted: low = on, high = off
+        if (caps_word_active) {
+            writePinLow(24);  // Turn LED on when caps word is active
+        } else {
+            writePinHigh(24);  // Turn LED off when caps word is inactive
+        }
+    }
+}
+
 /* This is used to like up the liatris LED as an indicator that we are in caps word mode
  *
  * In the future this could also be represented on the LED screens.
+ * Note: LED pin 24 is inverted (low = on, high = off)
  */
 void caps_word_set_user(bool active) {
-    if (!active) {
-        writePinLow(24);
-    } else {
-        writePinHigh(24);
-    }
+    caps_word_active = active;
+    // Update LED state immediately
+    _update_led_state();
 }
 
 /* Check if a keycode is a tap-hold mod key */
@@ -388,9 +406,8 @@ static void _remove_mod_tracker(uint16_t keycode) {
 
 /* Flash the LED once */
 static void _flash_mod_hold_led(void) {
-    // Turn LED on (low is on)
-    writePinLow(24);
-    // We'll turn it off in matrix_scan_user after the duration
+    // Turn LED on (low is on) - this will be managed by _update_led_state
+    // Just set the flash timer, _update_led_state will handle the LED
 }
 
 /* This handles treating a layer-top as a modifier in some situations.  For example, if you
@@ -408,9 +425,6 @@ static void _flash_mod_hold_led(void) {
  */
 bool sw_app_active = false;
 bool sw_win_active = false;
-
-/* Track mod hold state for LED flashing */
-static uint32_t mod_hold_flash_end_time = 0;
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (!process_layer_lock(keycode, record, LLOCK)) {
@@ -470,19 +484,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 void matrix_scan_user(void) {
     uint32_t now = timer_read32();
 
-    // Check if we need to turn off the flash LED (only if caps word is not active)
+    // Check if mod hold flash has ended
     if (mod_hold_flash_end_time > 0 && now >= mod_hold_flash_end_time) {
-        // Check if caps word is active before turning off LED
-        #ifdef CAPS_WORD_ENABLE
-        if (!is_caps_word_on()) {
-            // Turn LED off (high is off)
-            writePinHigh(24);
-        }
-        #else
-        // Turn LED off (high is off)
-        writePinHigh(24);
-        #endif
         mod_hold_flash_end_time = 0;
+        // Update LED state to restore caps word state
+        _update_led_state();
     }
 
     // Check all tracked mod keys
@@ -497,6 +503,8 @@ void matrix_scan_user(void) {
                 _flash_mod_hold_led();
                 tracker->has_flashed = true;
                 mod_hold_flash_end_time = now + MOD_HOLD_FLASH_DURATION_MS;
+                // Update LED state to show flash
+                _update_led_state();
             }
         }
     }
