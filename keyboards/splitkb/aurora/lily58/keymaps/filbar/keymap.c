@@ -424,49 +424,47 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     // Simple swapper calls - enhanced swapper allows shift to be held
     update_swapper(&sw_app_active, KC_LGUI, KC_TAB, SW_APP, keycode, record);
     update_swapper(&sw_win_active, KC_LGUI, KC_GRV, SW_WIN, keycode, record);
-    // Check if shift is held for reverse direction
-    if (get_mods() & MOD_MASK_SHIFT) {
-        // Track tap-hold mod keys for LED flashing
-        if (_is_tap_hold_mod(keycode)) {
-            if (record->event.pressed) {
-                // Key pressed - start tracking
-                mod_hold_tracker_t *tracker = _find_mod_tracker(keycode);
-                if (tracker) {
-                    tracker->press_time  = timer_read32();
-                    tracker->has_flashed = false;
-                }
+
+    // Track tap-hold mod keys for LED flashing
+    if (_is_tap_hold_mod(keycode)) {
+        if (record->event.pressed) {
+            // Key pressed - start tracking
+            mod_hold_tracker_t *tracker = _find_mod_tracker(keycode);
+            if (tracker) {
+                tracker->press_time  = timer_read32();
+                tracker->has_flashed = false;
+            }
+        } else {
+            // Key released - check if it was held (tap.count == 0 means held, not tapped)
+            if (record->tap.count == 0) {
+                // It was held, remove tracker
+                _remove_mod_tracker(keycode);
             } else {
-                // Key released - check if it was held (tap.count == 0 means held, not tapped)
-                if (record->tap.count == 0) {
-                    // It was held, remove tracker
-                    _remove_mod_tracker(keycode);
-                } else {
-                    // It was tapped, remove tracker
-                    _remove_mod_tracker(keycode);
-                }
+                // It was tapped, remove tracker
+                _remove_mod_tracker(keycode);
             }
         }
+    }
 
-// Call OLED-specific handler (safe when OLED is disabled)
+    // Call OLED-specific handler (safe when OLED is disabled)
 #ifdef OLED_ENABLE
-        if (!oled_process_record_user(keycode, record)) {
-            return false;
-        }
+    if (!oled_process_record_user(keycode, record)) {
+        return false;
+    }
 #endif
 
-        // Handle special characters
-        if (record->event.pressed) {
-            switch (keycode) {
-                case KC_RD_ARROW:
-                    send_string("->");
-                    return false;
-                case KC_LD_ARROW:
-                    send_string("<-");
-                    return false;
-                case KC_SCREENSHOT:
-                    tap_code16(LGUI(LSFT(LCTL(KC_4))));
-                    return false;
-            }
+    // Handle special characters
+    if (record->event.pressed) {
+        switch (keycode) {
+            case KC_RD_ARROW:
+                send_string("->");
+                return false;
+            case KC_LD_ARROW:
+                send_string("<-");
+                return false;
+            case KC_SCREENSHOT:
+                tap_code16(LGUI(LSFT(LCTL(KC_4))));
+                return false;
         }
     }
     return true;
