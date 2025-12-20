@@ -5,8 +5,6 @@
  * Getting retro shift to work with tap-hold mods: https://www.reddit.com/r/qmk/comments/10k1oya/autoshift_with_homerow_mods/
  */
 
-
-
 #include QMK_KEYBOARD_H
 #include "features/layer_lock.h"
 #include "features/swapper.h"
@@ -14,7 +12,7 @@
 #include "layers.h"
 
 #ifdef CONSOLE_ENABLE
-#   include "print.h"
+#    include "print.h"
 #endif // CONSOLE_ENABLE
 
 #ifndef LAYER_INDICATOR_BRIGHTNESS_INC
@@ -22,38 +20,37 @@
 #endif
 
 extern keymap_config_t keymap_config;
-extern bool oled_sleeping;
-extern uint32_t anim_sleep;
+extern bool            oled_sleeping;
+extern uint32_t        anim_sleep;
 
 /* Mod hold indicator LED flash
  * Tracks tap-hold mod keys and flashes LED once when held long enough
  */
-#define MOD_HOLD_FLASH_THRESHOLD_MS (TAPPING_TERM)  // Flash 50ms after tapping term
-#define MOD_HOLD_FLASH_DURATION_MS 50  // How long to flash the LED
+#define MOD_HOLD_FLASH_THRESHOLD_MS (TAPPING_TERM) // Flash 50ms after tapping term
+#define MOD_HOLD_FLASH_DURATION_MS 50              // How long to flash the LED
 
 typedef struct {
-    uint16_t keycode;      // The mod keycode being tracked
-    uint32_t press_time;   // When it was pressed
-    bool has_flashed;      // Whether we've already flashed for this press
+    uint16_t keycode;     // The mod keycode being tracked
+    uint32_t press_time;  // When it was pressed
+    bool     has_flashed; // Whether we've already flashed for this press
 } mod_hold_tracker_t;
 
-static mod_hold_tracker_t mod_hold_trackers[8] = {0};  // Track up to 8 mod keys
-static uint8_t mod_hold_count = 0;
-static bool caps_word_active = false;  // Track caps word state for LED management
-static uint32_t mod_hold_flash_end_time = 0;  // When the mod hold flash should end
+static mod_hold_tracker_t mod_hold_trackers[8]    = {0}; // Track up to 8 mod keys
+static uint8_t            mod_hold_count          = 0;
+static bool               caps_word_active        = false; // Track caps word state for LED management
+static uint32_t           mod_hold_flash_end_time = 0;     // When the mod hold flash should end
 
 #define DEFAULT_LAYER _COLEMAK
 
 enum lily_keycodes {
     LLOCK = SAFE_RANGE,
-    SW_APP,  // Switch app windows (cmd-tab)
-    SW_WIN,   // Switch apps        (cmd-`)
-    KC_RD_ARROW,  // ->
-    KC_LD_ARROW,  // <-
+    SW_APP,        // Switch app windows (cmd-tab, with shift for reverse)
+    SW_WIN,        // Switch apps        (cmd-`)
+    KC_RD_ARROW,   // ->
+    KC_LD_ARROW,   // <-
     KC_SCREENSHOT, // cmd+shift+ctrl+4
-    KC_EMDASH    // em dash
+    KC_EMDASH      // em dash
 };
-
 
 /*
  * Custom key definitions
@@ -98,8 +95,6 @@ enum lily_keycodes {
 #define QMH_N RSFT_T(KC_N)
 #define QMH_COMM RCTL_T(KC_COMM)
 #define QMH_DOT RGUI_T(KC_DOT)
-
-
 
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -175,7 +170,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 /* Numbers
  * ,-----------------------------------------.                    ,-----------------------------------------.
- * |SW_WIN|      |SW_WIN|SW_APP| Shft |LOGOUT|                    |      |   (  |   :  |   )  |   _  | TRNS |
+ * |SW_WIN| Shft |SW_WIN|SW_APP| Shft |LOGOUT|                    |      |   (  |   :  |   )  |   _  | TRNS |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
  * |SW_APP|  ⌘Q  |  ⌘W  |      |      |      |                    |   *  |   7  |   8  |   9  |   +  |      |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
@@ -189,7 +184,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  */
 
 [_NUMBER] = LAYOUT(
-    SW_WIN,  XXXXXXX, SW_WIN,  SW_APP,  KC_LSFT, LOGOUT,                     XXXXXXX, KC_LPRN, KC_COLN, KC_RPRN, KC_UNDS, _______,
+    SW_WIN,  KC_LSFT, SW_WIN,  SW_APP,  XXXXXXX, LOGOUT,                     KC_LSFT, KC_LPRN, KC_COLN, KC_RPRN, KC_UNDS, _______,
     SW_APP,  G(KC_Q), G(KC_W), XXXXXXX, XXXXXXX, XXXXXXX,                    KC_PAST, KC_7,    KC_8,    KC_9,    KC_PPLS, XXXXXXX,
     KC_LSFT, G(KC_A), G(KC_X), G(KC_C), G(KC_V), CW_TOGG,                    KC_PSLS, KC_4,    KC_5,    KC_6,    KC_MINS, KC_EQL,
     _______, KC_LGUI, KC_LALT, KC_LSFT, KC_LCTL, XXXXXXX, K_UNDO,   K_REDO,  KC_DOT,  KC_1,    KC_2,    KC_3,    KC_0,    XXXXXXX,
@@ -303,14 +298,14 @@ void keyboard_pre_init_user(void) {
 /* Standard init with the default layer set here (see definition above)
  */
 void keyboard_post_init_user(void) {
-    default_layer_set(1 << DEFAULT_LAYER );
+    default_layer_set(1 << DEFAULT_LAYER);
 
-#   ifdef CONSOLE_ENABLE
+#ifdef CONSOLE_ENABLE
     // debug_enable=true;
     // debug_matrix=true;
     // debug_keyboard=true;
     // debug_mouse=true;
-#   endif // CONSOLE_ENABLE
+#endif // CONSOLE_ENABLE
 }
 
 /* This is needed to handle retro shift for the tap-hold mods on the home (or lower) row
@@ -325,10 +320,8 @@ void keyboard_post_init_user(void) {
  * Note the default function calls this one and can be found here: https://docs.qmk.fm/features/auto_shift#auto-shift-per-key
  */
 bool get_custom_auto_shifted_key(uint16_t keycode, keyrecord_t *record) {
-
     // Is this a tap and hold mod that wasn't used?
-    if (IS_RETRO(keycode))
-        return true;
+    if (IS_RETRO(keycode)) return true;
 
     return false;
 }
@@ -343,9 +336,9 @@ static void _update_led_state(void) {
         // No flash active, set LED based on caps word state
         // LED pin 24 is inverted: low = on, high = off
         if (caps_word_active) {
-            writePinLow(24);  // Turn LED on when caps word is active
+            writePinLow(24); // Turn LED on when caps word is active
         } else {
-            writePinHigh(24);  // Turn LED off when caps word is inactive
+            writePinHigh(24); // Turn LED off when caps word is inactive
         }
     }
 }
@@ -364,14 +357,11 @@ void caps_word_set_user(bool active) {
 /* Check if a keycode is a tap-hold mod key */
 static bool _is_tap_hold_mod(uint16_t keycode) {
     // Check for all the homerow mod keycodes
-    return (keycode == CMH_Z || keycode == CMH_X || keycode == CMH_C || keycode == CMH_D ||
-            keycode == CMH_SLSH || keycode == CMH_DOT || keycode == CMH_COMM || keycode == CMH_H ||
-            keycode == QMH_Z || keycode == QMH_X || keycode == QMH_C || keycode == QMH_V ||
-            keycode == QMH_M || keycode == QMH_N || keycode == QMH_COMM || keycode == QMH_DOT);
+    return (keycode == CMH_Z || keycode == CMH_X || keycode == CMH_C || keycode == CMH_D || keycode == CMH_SLSH || keycode == CMH_DOT || keycode == CMH_COMM || keycode == CMH_H || keycode == QMH_Z || keycode == QMH_X || keycode == QMH_C || keycode == QMH_V || keycode == QMH_M || keycode == QMH_N || keycode == QMH_COMM || keycode == QMH_DOT);
 }
 
 /* Find or add a mod tracker */
-static mod_hold_tracker_t* _find_mod_tracker(uint16_t keycode) {
+static mod_hold_tracker_t *_find_mod_tracker(uint16_t keycode) {
     // First, try to find existing tracker
     for (uint8_t i = 0; i < mod_hold_count; i++) {
         if (mod_hold_trackers[i].keycode == keycode) {
@@ -381,9 +371,9 @@ static mod_hold_tracker_t* _find_mod_tracker(uint16_t keycode) {
 
     // If not found and we have space, add a new one
     if (mod_hold_count < 8) {
-        mod_hold_trackers[mod_hold_count].keycode = keycode;
+        mod_hold_trackers[mod_hold_count].keycode     = keycode;
         mod_hold_trackers[mod_hold_count].has_flashed = false;
-        mod_hold_trackers[mod_hold_count].press_time = 0;
+        mod_hold_trackers[mod_hold_count].press_time  = 0;
         return &mod_hold_trackers[mod_hold_count++];
     }
 
@@ -431,50 +421,52 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         return false;
     }
 
-    /* there are some glitches...  shift exits, and you need to release SYM between different swaps that use the same mod */
-    update_swapper( &sw_app_active, KC_LGUI, KC_TAB, SW_APP, keycode, record );
-    update_swapper( &sw_win_active, KC_LGUI, KC_GRV, SW_WIN, keycode, record );
-
-    // Track tap-hold mod keys for LED flashing
-    if (_is_tap_hold_mod(keycode)) {
-        if (record->event.pressed) {
-            // Key pressed - start tracking
-            mod_hold_tracker_t* tracker = _find_mod_tracker(keycode);
-            if (tracker) {
-                tracker->press_time = timer_read32();
-                tracker->has_flashed = false;
-            }
-        } else {
-            // Key released - check if it was held (tap.count == 0 means held, not tapped)
-            if (record->tap.count == 0) {
-                // It was held, remove tracker
-                _remove_mod_tracker(keycode);
+    // Simple swapper calls - enhanced swapper allows shift to be held
+    update_swapper(&sw_app_active, KC_LGUI, KC_TAB, SW_APP, keycode, record);
+    update_swapper(&sw_win_active, KC_LGUI, KC_GRV, SW_WIN, keycode, record);
+    // Check if shift is held for reverse direction
+    if (get_mods() & MOD_MASK_SHIFT) {
+        // Track tap-hold mod keys for LED flashing
+        if (_is_tap_hold_mod(keycode)) {
+            if (record->event.pressed) {
+                // Key pressed - start tracking
+                mod_hold_tracker_t *tracker = _find_mod_tracker(keycode);
+                if (tracker) {
+                    tracker->press_time  = timer_read32();
+                    tracker->has_flashed = false;
+                }
             } else {
-                // It was tapped, remove tracker
-                _remove_mod_tracker(keycode);
+                // Key released - check if it was held (tap.count == 0 means held, not tapped)
+                if (record->tap.count == 0) {
+                    // It was held, remove tracker
+                    _remove_mod_tracker(keycode);
+                } else {
+                    // It was tapped, remove tracker
+                    _remove_mod_tracker(keycode);
+                }
             }
         }
-    }
 
-    // Call OLED-specific handler (safe when OLED is disabled)
+// Call OLED-specific handler (safe when OLED is disabled)
 #ifdef OLED_ENABLE
-    if (!oled_process_record_user(keycode, record)) {
-        return false;
-    }
+        if (!oled_process_record_user(keycode, record)) {
+            return false;
+        }
 #endif
 
-    // Handle special characters
-    if (record->event.pressed) {
-        switch (keycode) {
-            case KC_RD_ARROW:
-                send_string("->");
-                return false;
-            case KC_LD_ARROW:
-                send_string("<-");
-                return false;
-            case KC_SCREENSHOT:
-                tap_code16(LGUI(LSFT(LCTL(KC_4))));
-                return false;
+        // Handle special characters
+        if (record->event.pressed) {
+            switch (keycode) {
+                case KC_RD_ARROW:
+                    send_string("->");
+                    return false;
+                case KC_LD_ARROW:
+                    send_string("<-");
+                    return false;
+                case KC_SCREENSHOT:
+                    tap_code16(LGUI(LSFT(LCTL(KC_4))));
+                    return false;
+            }
         }
     }
     return true;
@@ -493,7 +485,7 @@ void matrix_scan_user(void) {
 
     // Check all tracked mod keys
     for (uint8_t i = 0; i < mod_hold_count; i++) {
-        mod_hold_tracker_t* tracker = &mod_hold_trackers[i];
+        mod_hold_tracker_t *tracker = &mod_hold_trackers[i];
 
         if (!tracker->has_flashed && tracker->press_time > 0) {
             uint32_t hold_duration = timer_elapsed32(tracker->press_time);
@@ -501,7 +493,7 @@ void matrix_scan_user(void) {
             // If held long enough, flash the LED once
             if (hold_duration >= MOD_HOLD_FLASH_THRESHOLD_MS) {
                 _flash_mod_hold_led();
-                tracker->has_flashed = true;
+                tracker->has_flashed    = true;
                 mod_hold_flash_end_time = now + MOD_HOLD_FLASH_DURATION_MS;
                 // Update LED state to show flash
                 _update_led_state();
@@ -509,7 +501,6 @@ void matrix_scan_user(void) {
         }
     }
 }
-
 
 /* RGB Layer Color Configuration
  *
@@ -522,14 +513,14 @@ void matrix_scan_user(void) {
  * 2. Set the highlight_count to the number of entries
  */
 typedef struct {
-    uint16_t keycode;        // Keycode to highlight
-    HSV color;               // Color to use for this keycode
+    uint16_t keycode; // Keycode to highlight
+    HSV      color;   // Color to use for this keycode
 } keycode_highlight_t;
 
 typedef struct {
-    HSV default_color;           // Default color for this layer
-    keycode_highlight_t highlights[8];  // Array of keycode/color pairs (adjust size as needed)
-    uint8_t highlight_count;     // Number of highlights defined
+    HSV                 default_color;   // Default color for this layer
+    keycode_highlight_t highlights[8];   // Array of keycode/color pairs (adjust size as needed)
+    uint8_t             highlight_count; // Number of highlights defined
 } layer_color_config_t;
 
 /* Get the color configuration for a specific layer */
@@ -538,42 +529,42 @@ static layer_color_config_t _get_layer_color_config(uint8_t layer) {
 
     switch (layer) {
         case _QWERTY:
-            config.default_color = (HSV){HSV_RED};
+            config.default_color   = (HSV){HSV_RED};
             config.highlight_count = 0;
             break;
         case _COLEMAK:
-            config.default_color = (HSV){HSV_GREEN};
+            config.default_color   = (HSV){HSV_GREEN};
             config.highlight_count = 0;
             break;
         case _NAV:
             config.default_color = (HSV){HSV_BLUE};
             // Arrow keys highlighted in white
-            config.highlights[0] = (keycode_highlight_t){KC_UP, (HSV){HSV_WHITE}};
-            config.highlights[1] = (keycode_highlight_t){KC_DOWN, (HSV){HSV_WHITE}};
-            config.highlights[2] = (keycode_highlight_t){KC_LEFT, (HSV){HSV_WHITE}};
-            config.highlights[3] = (keycode_highlight_t){KC_RGHT, (HSV){HSV_WHITE}};
+            config.highlights[0]   = (keycode_highlight_t){KC_UP, (HSV){HSV_WHITE}};
+            config.highlights[1]   = (keycode_highlight_t){KC_DOWN, (HSV){HSV_WHITE}};
+            config.highlights[2]   = (keycode_highlight_t){KC_LEFT, (HSV){HSV_WHITE}};
+            config.highlights[3]   = (keycode_highlight_t){KC_RGHT, (HSV){HSV_WHITE}};
             config.highlight_count = 4;
             break;
         case _NUMBER:
             config.default_color = (HSV){HSV_WHITE};
             // Logout button highlighted in red
-            config.highlights[0] = (keycode_highlight_t){LOGOUT, (HSV){HSV_RED}};
+            config.highlights[0]   = (keycode_highlight_t){LOGOUT, (HSV){HSV_RED}};
             config.highlight_count = 1;
             break;
         case _FUNCTION:
-            config.default_color = (HSV){HSV_YELLOW};
+            config.default_color   = (HSV){HSV_YELLOW};
             config.highlight_count = 0;
             break;
         case _CONF:
-            config.default_color = (HSV){HSV_RED};
+            config.default_color   = (HSV){HSV_RED};
             config.highlight_count = 0;
             break;
         case _RAISE:
-            config.default_color = (HSV){HSV_PURPLE};
+            config.default_color   = (HSV){HSV_PURPLE};
             config.highlight_count = 0;
             break;
         default:
-            config.default_color = (HSV){HSV_OFF};
+            config.default_color   = (HSV){HSV_OFF};
             config.highlight_count = 0;
             break;
     }
@@ -600,37 +591,36 @@ static HSV _get_keycode_color(uint8_t layer, uint16_t keycode) {
  *
  * NOTE: Any changes to this function must be flashed to both halves.
  */
- bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
-
+bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     const uint8_t layer = get_highest_layer(layer_state);
 
     /* For typing layers light the whole keyboard, just set the hue and keep the matrix effects */
-    if( layer <= _COLEMAK ) {
-        for( uint8_t layer = _BASE; layer < _CONF; layer++ ) {
-            if( default_layer_state & (1 << layer) ) {
+    if (layer <= _COLEMAK) {
+        for (uint8_t layer = _BASE; layer < _CONF; layer++) {
+            if (default_layer_state & (1 << layer)) {
                 layer_color_config_t config = _get_layer_color_config(layer);
-                rgblight_sethsv( config.default_color.h, config.default_color.s, config.default_color.v );
+                rgblight_sethsv(config.default_color.h, config.default_color.s, config.default_color.v);
             }
         }
 
-    /* For special layers use lighting that reflects the keybindings. */
+        /* For special layers use lighting that reflects the keybindings. */
     } else {
-        const RGB off = hsv_to_rgb((HSV){HSV_OFF});
-        uint8_t layer = get_highest_layer(layer_state);
+        const RGB off   = hsv_to_rgb((HSV){HSV_OFF});
+        uint8_t   layer = get_highest_layer(layer_state);
 
         for (uint8_t row = 0; row < MATRIX_ROWS; ++row) {
             for (uint8_t col = 0; col < MATRIX_COLS; ++col) {
                 uint8_t index = g_led_config.matrix_co[row][col];
 
                 if (index >= led_min && index < led_max && index != NO_LED) {
-                    uint16_t keycode = keymap_key_to_keycode(layer, (keypos_t){col,row});
-                    if( keycode > KC_TRNS ) {
+                    uint16_t keycode = keymap_key_to_keycode(layer, (keypos_t){col, row});
+                    if (keycode > KC_TRNS) {
                         // Get the color for this keycode (checks highlights first, then defaults)
                         HSV hsv = _get_keycode_color(layer, keycode);
 
                         // Set brightness to the configured interval brighter than current brightness, clamped to 255
                         // (ie. uint8_t max value). This compensates for the dimmer appearance of the underglow LEDs.
-                        hsv.v = MIN(rgb_matrix_get_val() + LAYER_INDICATOR_BRIGHTNESS_INC, 255);
+                        hsv.v         = MIN(rgb_matrix_get_val() + LAYER_INDICATOR_BRIGHTNESS_INC, 255);
                         const RGB rgb = hsv_to_rgb(hsv);
 
                         rgb_matrix_set_color(index, rgb.r, rgb.g, rgb.b);
@@ -645,12 +635,8 @@ static HSV _get_keycode_color(uint8_t layer, uint16_t keycode) {
 }
 
 // Add combo definitions before the keymaps array
-const uint16_t PROGMEM combo_rd_arrow[] = {KC_RIGHT, KC_DOWN, COMBO_END};
-const uint16_t PROGMEM combo_ld_arrow[] = {KC_LEFT, KC_DOWN, COMBO_END};
+const uint16_t PROGMEM combo_rd_arrow[]   = {KC_RIGHT, KC_DOWN, COMBO_END};
+const uint16_t PROGMEM combo_ld_arrow[]   = {KC_LEFT, KC_DOWN, COMBO_END};
 const uint16_t PROGMEM combo_screenshot[] = {KC_Q, KC_W, KC_F, KC_P, COMBO_END};
 
-combo_t key_combos[] = {
-    COMBO(combo_rd_arrow, KC_RD_ARROW),
-    COMBO(combo_ld_arrow, KC_LD_ARROW),
-    COMBO(combo_screenshot, KC_SCREENSHOT)
-};
+combo_t key_combos[] = {COMBO(combo_rd_arrow, KC_RD_ARROW), COMBO(combo_ld_arrow, KC_LD_ARROW), COMBO(combo_screenshot, KC_SCREENSHOT)};
