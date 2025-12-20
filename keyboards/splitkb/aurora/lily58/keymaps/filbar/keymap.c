@@ -175,11 +175,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 /* Numbers
  * ,-----------------------------------------.                    ,-----------------------------------------.
- * |SW_WIN|      |      |      |      |LOGOUT|                    |      |   (  |   :  |   )  |   _  | TRNS |
+ * |SW_WIN|      |SW_WIN|SW_APP| Shft |LOGOUT|                    |      |   (  |   :  |   )  |   _  | TRNS |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
  * |SW_APP|  ⌘Q  |  ⌘W  |      |      |      |                    |   *  |   7  |   8  |   9  |   +  |      |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * |  CW  | SelAl| Cut  | Copy | Paste|      |-------.    ,-------|   /  |   4  |   5  |   6  |   -  |   =  |
+ * | Shft | SelAl| Cut  | Copy | Paste| CapsW|-------.    ,-------|   /  |   4  |   5  |   6  |   -  |   =  |
  * |------+------+------+------+------+------|  UNDO |    | REDO  |------+------+------+------+------+------|
  * | TRNS |  ⌘   |  ⌥   |  ⇧   |   ^  |      |-------|    |-------|   .  |   1  |   2  |   3  |   0  |      |
  * `-----------------------------------------/       /     \       \----------------------------------------'
@@ -189,9 +189,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  */
 
 [_NUMBER] = LAYOUT(
-    SW_WIN,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, LOGOUT,                     XXXXXXX, KC_LPRN, KC_COLN, KC_RPRN, KC_UNDS, _______,
+    SW_WIN,  XXXXXXX, SW_WIN,  SW_APP,  KC_LSFT, LOGOUT,                     XXXXXXX, KC_LPRN, KC_COLN, KC_RPRN, KC_UNDS, _______,
     SW_APP,  G(KC_Q), G(KC_W), XXXXXXX, XXXXXXX, XXXXXXX,                    KC_PAST, KC_7,    KC_8,    KC_9,    KC_PPLS, XXXXXXX,
-    CW_TOGG, G(KC_A), G(KC_X), G(KC_C), G(KC_V), XXXXXXX,                    KC_PSLS, KC_4,    KC_5,    KC_6,    KC_MINS, KC_EQL,
+    KC_LSFT, G(KC_A), G(KC_X), G(KC_C), G(KC_V), CW_TOGG,                    KC_PSLS, KC_4,    KC_5,    KC_6,    KC_MINS, KC_EQL,
     _______, KC_LGUI, KC_LALT, KC_LSFT, KC_LCTL, XXXXXXX, K_UNDO,   K_REDO,  KC_DOT,  KC_1,    KC_2,    KC_3,    KC_0,    XXXXXXX,
                       _______, _______, _______, _______,                    _______, _______, _______, _______
 ),
