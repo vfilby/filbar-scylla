@@ -6,8 +6,8 @@ enum corne_layers {
     _COLEMAK,
     _QWERTY,
     _NUMBER,
-//    _NAV,
-    _RAISE,
+    _NAV,
+    _SYM,
 //    _FUNCTION,
     _CONF,
 };

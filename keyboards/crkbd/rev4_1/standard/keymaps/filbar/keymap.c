@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "keycodes.h"
 #include QMK_KEYBOARD_H
 
 #include "layers.h"
@@ -46,8 +47,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define B_CONF LT(_CONF, KC_B)
 #define T_CONF LT(_CONF, KC_T)
+
+/*
+ * Custom key definitions
+ */
+#define WEBTAB_L G(KC_LCBR)
+#define WEBTAB_R G(KC_RCBR)
+#define LN_END G(KC_RIGHT)
+#define LN_BEG G(KC_LEFT)
+#define WORD_R A(KC_RIGHT)
+#define WORD_L A(KC_LEFT)
+#define LOGOUT G(C(KC_Q))
+#define K_UNDO G(KC_Z)
+#define K_REDO G(S(KC_Z))
+
+// Layer short names
 #define SPC_NUM LT(_NUMBER,KC_SPC)
 #define ENT_NAV LT(_NAV, KC_ENT)
+#define L_NUM MO(_NUMBER)
+#define ENT_SYM LT(_SYM, KC_ENT)
+#define BSPC_NAV LT(_NAV, KC_BSPC)
 
 #define QWERTY DF(_QWERTY)
 #define COLEMK DF(_COLEMAK)
@@ -64,7 +83,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
             KC_LSFT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  KC_ESC,
         //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
-                                                KC_LGUI, KC_BSPC, SPC_NUM,     KC_ENT,  MO(_RAISE), KC_RALT
+                                                KC_LGUI,BSPC_NAV, SPC_NUM,    ENT_SYM, KC_TAB, KC_DEL
         //                                    `--------------------------'  `--------------------------'
     ),
 
@@ -96,15 +115,28 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
         //,-----------------------------------------------------. --------  -------- ,-----------------------------------------------------.
             XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   KC_NO,     KC_NO,  KC_LBRC,    KC_7,    KC_8,    KC_9, KC_RBRC, KC_BSPC,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
-            KC_LCTL, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   KC_NO,     KC_NO,  KC_SCLN,    KC_4,    KC_5,    KC_6,  KC_EQL, XXXXXXX,
+            XXXXXXX, KC_LGUI, KC_LALT, KC_LSFT, KC_BSLS, XXXXXXX,   KC_NO,     KC_NO,  KC_SCLN,    KC_4,    KC_5,    KC_6,  KC_EQL, XXXXXXX,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
-            KC_LSFT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      KC_TILD,    KC_1,    KC_2,    KC_3,    KC_0, XXXXXXX,
+            XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      KC_TILD,    KC_1,    KC_2,    KC_3, KC_BSLS, XXXXXXX,
         //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
-                                                KC_LGUI, _______,  KC_SPC,     KC_ENT,   MO(_CONF), KC_DOT
+                                                _______, _______, _______,    KC_MINS,   KC_0, KC_DOT
         //                                    `--------------------------'  `--------------------------'
     ),
 
-    [_RAISE] = LAYOUT_split_3x6_3_ex2(
+
+    [_NAV] = LAYOUT_split_3x6_3_ex2(
+        //,-----------------------------------------------------. --------  -------- ,-----------------------------------------------------.
+            XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX,  KC_PGUP,  XXXXXXX,WEBTAB_L,   KC_UP,WEBTAB_R, XXXXXXX, XXXXXXX,
+        //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
+            XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX,  KC_PGDN,   LN_BEG, KC_LEFT, KC_DOWN, KC_RGHT,  LN_END, XXXXXXX,
+        //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
+            XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX,  WORD_L, XXXXXXX,  WORD_R, XXXXXXX, XXXXXXX,
+        //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
+                                                _______, _______, _______,    _______, _______, _______
+        //                                    `--------------------------'  `--------------------------'
+    ),
+
+    [_SYM] = LAYOUT_split_3x6_3_ex2(
         //,-----------------------------------------------------. --------  -------- ,-----------------------------------------------------.
              KC_TAB, KC_EXLM,   KC_AT, KC_HASH,  KC_DLR, KC_PERC,   KC_NO,     KC_NO,  KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, KC_BSPC,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
@@ -112,7 +144,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
             KC_LSFT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      KC_UNDS, KC_PLUS, KC_LCBR, KC_RCBR, KC_PIPE, KC_TILD,
         //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
-                                                KC_LGUI,   MO(_CONF),  KC_SPC,     KC_ENT, _______, KC_RALT
+                                                _______,MO(_CONF),_______,    _______, _______, _______
         //                                    `--------------------------'  `--------------------------'
     ),
 
@@ -124,7 +156,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
             RM_NEXT, RM_HUED, RM_SATD, RM_VALD, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
         //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
-                                                KC_LGUI, _______,  KC_SPC,     KC_ENT,  QWERTY,  COLEMK
+                                                _______, _______, _______,    _______,  QWERTY,  COLEMK
         //                                    `--------------------------'  `--------------------------'
     )
 };
@@ -207,7 +239,7 @@ static layer_color_config_t _get_layer_color_config(uint8_t layer) {
             config.default_color   = (HSV){HSV_RED};
             config.highlight_count = 0;
             break;
-        case _RAISE:
+        case _SYM:
             config.default_color   = (HSV){HSV_PURPLE};
             config.highlight_count = 0;
             break;
