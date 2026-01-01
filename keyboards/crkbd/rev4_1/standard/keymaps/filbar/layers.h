@@ -7,7 +7,9 @@ enum corne_layers {
     _QWERTY,
     _NUMBER,
     _NAV,
+    _MOUSE,
     _SYM,
+    _MEDIA,
 //    _FUNCTION,
     _CONF,
 };

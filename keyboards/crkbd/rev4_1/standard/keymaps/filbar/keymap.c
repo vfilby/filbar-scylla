@@ -72,8 +72,10 @@ enum crkbd_keycodes {
 #define SPC_NUM LT(_NUMBER,KC_SPC)
 #define ENT_NAV LT(_NAV, KC_ENT)
 #define L_NUM MO(_NUMBER)
-#define ENT_SYM LT(_SYM, KC_ENT)
+#define TAB_SYM LT(_SYM, KC_TAB)
 #define BSPC_NAV LT(_NAV, KC_BSPC)
+#define DEL_MOUS LT(_MOUSE, KC_DEL)
+#define ENT_MED LT(_MEDIA, KC_ENT)
 
 #define QWERTY DF(_QWERTY)
 #define COLEMK DF(_COLEMAK)
@@ -88,9 +90,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
             KC_LCTL, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,    UNDO,      REDO,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_QUOT,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
-            KC_LSFT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  KC_ESC,
+            KC_LSFT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_QUOT,
         //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
-                                                KC_LGUI,BSPC_NAV, SPC_NUM,    ENT_SYM, KC_TAB, KC_DEL
+                                                KC_LGUI,BSPC_NAV, SPC_NUM,    ENT_MED, TAB_SYM, DEL_MOUS
         //                                    `--------------------------'  `--------------------------'
     ),
 
@@ -135,11 +137,23 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
         //,-----------------------------------------------------. --------  -------- ,-----------------------------------------------------.
             XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX,  KC_PGUP,  XXXXXXX,WEBTAB_L,   KC_UP,WEBTAB_R, XXXXXXX, XXXXXXX,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
-            XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX,  KC_PGDN,   LN_BEG, KC_LEFT, KC_DOWN, KC_RGHT,  LN_END, XXXXXXX,
+            XXXXXXX, KC_LGUI, KC_LALT, KC_LSFT, KC_LCTL, XXXXXXX,  XXXXXXX,  KC_PGDN,   LN_BEG, KC_LEFT, KC_DOWN, KC_RGHT,  LN_END, XXXXXXX,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
             XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX,  WORD_L, XXXXXXX,  WORD_R, XXXXXXX, XXXXXXX,
         //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
                                                 _______, _______, _______,    _______, _______, _______
+        //                                    `--------------------------'  `--------------------------'
+    ),
+
+    [_MOUSE] = LAYOUT_split_3x6_3_ex2(
+        //,-----------------------------------------------------. --------  -------- ,-----------------------------------------------------.
+            XXXXXXX, XXXXXXX, XXXXXXX,   MS_UP, XXXXXXX, XXXXXXX,  XXXXXXX,  KC_PGUP,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+        //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
+            XXXXXXX, XXXXXXX, MS_LEFT, MS_DOWN, MS_RGHT, XXXXXXX,  XXXXXXX,  KC_PGDN,  XXXXXXX, KC_RCTL, KC_RSFT, KC_RALT, KC_RGUI, XXXXXXX,
+        //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
+            XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+        //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
+                                                MS_BTN3, MS_BTN2, MS_BTN1,    _______, _______, _______
         //                                    `--------------------------'  `--------------------------'
     ),
 
@@ -152,6 +166,18 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
             KC_LSFT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      KC_UNDS, KC_PLUS, KC_LCBR, KC_RCBR, KC_PIPE, KC_TILD,
         //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
                                                 _______,MO(_CONF),_______,    _______, _______, _______
+        //                                    `--------------------------'  `--------------------------'
+    ),
+
+    [_MEDIA] = LAYOUT_split_3x6_3_ex2(
+        //,-----------------------------------------------------. --------  -------- ,-----------------------------------------------------.
+            XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX,  XXXXXXX,  KC_MUTE, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+        //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
+            XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX,  XXXXXXX,  KC_VOLU, KC_MRWD, KC_MPLY, KC_MFFD, XXXXXXX, XXXXXXX,
+        //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
+            XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      KC_VOLD, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+        //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
+                                                XXXXXXX, XXXXXXX, XXXXXXX,    _______, _______, _______
         //                                    `--------------------------'  `--------------------------'
     ),
 
