@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #define QUICK_TAP_TERM 0 /* disable quick tap repeat */
-#define TAPPING_TERM 150
+#define TAPPING_TERM 200
 #define PERMISSIVE_HOLD
 
 #define AUTO_SHIFT_TIMEOUT 215

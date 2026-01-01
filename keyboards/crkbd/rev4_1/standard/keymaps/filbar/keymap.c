@@ -132,3 +132,137 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 void keyboard_post_init_user(void) {
     default_layer_set(1 << DEFAULT_LAYER);
 }
+
+#ifndef LAYER_INDICATOR_BRIGHTNESS_INC
+#    define LAYER_INDICATOR_BRIGHTNESS_INC 22
+#endif
+
+/* RGB Layer Color Configuration
+ *
+ * This structure allows you to define:
+ * - Default color for each layer
+ * - Specific keycodes that should be highlighted with different colors
+ *
+ * To add a highlight:
+ * 1. Add a keycode/color pair to the highlights array
+ * 2. Set the highlight_count to the number of entries
+ */
+typedef struct {
+    uint16_t keycode; // Keycode to highlight
+    HSV      color;   // Color to use for this keycode
+} keycode_highlight_t;
+
+typedef struct {
+    HSV                 default_color;   // Default color for this layer
+    keycode_highlight_t highlights[8];   // Array of keycode/color pairs (adjust size as needed)
+    uint8_t             highlight_count; // Number of highlights defined
+} layer_color_config_t;
+
+/* Get the color configuration for a specific layer */
+static layer_color_config_t _get_layer_color_config(uint8_t layer) {
+    layer_color_config_t config = {0};
+
+    switch (layer) {
+        case _QWERTY:
+            config.default_color   = (HSV){HSV_RED};
+            config.highlight_count = 0;
+            break;
+        case _COLEMAK:
+            config.default_color   = (HSV){HSV_GREEN};
+            config.highlight_count = 0;
+            break;
+        // case _NAV:
+        //     config.default_color = (HSV){HSV_BLUE};
+        //     // Arrow keys highlighted in white
+        //     config.highlights[0]   = (keycode_highlight_t){KC_UP, (HSV){HSV_WHITE}};
+        //     config.highlights[1]   = (keycode_highlight_t){KC_DOWN, (HSV){HSV_WHITE}};
+        //     config.highlights[2]   = (keycode_highlight_t){KC_LEFT, (HSV){HSV_WHITE}};
+        //     config.highlights[3]   = (keycode_highlight_t){KC_RGHT, (HSV){HSV_WHITE}};
+        //     config.highlight_count = 4;
+        //     break;
+        case _NUMBER:
+            config.default_color   = (HSV){HSV_WHITE};
+            config.highlight_count = 0;
+            break;
+        // case _FUNCTION:
+        //     config.default_color   = (HSV){HSV_YELLOW};
+        //     config.highlight_count = 0;
+        //     break;
+        case _CONF:
+            config.default_color   = (HSV){HSV_RED};
+            config.highlight_count = 0;
+            break;
+        case _RAISE:
+            config.default_color   = (HSV){HSV_PURPLE};
+            config.highlight_count = 0;
+            break;
+        default:
+            config.default_color   = (HSV){HSV_OFF};
+            config.highlight_count = 0;
+            break;
+    }
+
+    return config;
+}
+
+/* Get the color for a specific keycode on a layer, checking highlights first */
+static HSV _get_keycode_color(uint8_t layer, uint16_t keycode) {
+    layer_color_config_t config = _get_layer_color_config(layer);
+
+    // Check if this keycode has a highlight color
+    for (uint8_t i = 0; i < config.highlight_count; i++) {
+        if (config.highlights[i].keycode == keycode) {
+            return config.highlights[i].color;
+        }
+    }
+
+    // Return default color for this layer
+    return config.default_color;
+}
+
+/* Layer effects that dynamically control LEDS on different layers to indicate which keys are available
+ *
+ * NOTE: Any changes to this function must be flashed to both halves.
+ */
+bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+    const uint8_t layer = get_highest_layer(layer_state);
+
+    /* For typing layers light the whole keyboard, just set the hue and keep the matrix effects */
+    if (layer <= _COLEMAK) {
+        for (uint8_t layer = _BASE; layer < _CONF; layer++) {
+            if (default_layer_state & (1 << layer)) {
+                layer_color_config_t config = _get_layer_color_config(layer);
+                rgblight_sethsv(config.default_color.h, config.default_color.s, config.default_color.v);
+            }
+        }
+
+        /* For special layers use lighting that reflects the keybindings. */
+    } else {
+        const RGB off   = hsv_to_rgb((HSV){HSV_OFF});
+        uint8_t   layer = get_highest_layer(layer_state);
+
+        for (uint8_t row = 0; row < MATRIX_ROWS; ++row) {
+            for (uint8_t col = 0; col < MATRIX_COLS; ++col) {
+                uint8_t index = g_led_config.matrix_co[row][col];
+
+                if (index >= led_min && index < led_max && index != NO_LED) {
+                    uint16_t keycode = keymap_key_to_keycode(layer, (keypos_t){col, row});
+                    if (keycode > KC_TRNS) {
+                        // Get the color for this keycode (checks highlights first, then defaults)
+                        HSV hsv = _get_keycode_color(layer, keycode);
+
+                        // Set brightness to the configured interval brighter than current brightness, clamped to 255
+                        // (ie. uint8_t max value). This compensates for the dimmer appearance of the underglow LEDs.
+                        hsv.v         = MIN(rgb_matrix_get_val() + LAYER_INDICATOR_BRIGHTNESS_INC, 255);
+                        const RGB rgb = hsv_to_rgb(hsv);
+
+                        rgb_matrix_set_color(index, rgb.r, rgb.g, rgb.b);
+                    } else {
+                        rgb_matrix_set_color(index, off.r, off.g, off.b);
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
