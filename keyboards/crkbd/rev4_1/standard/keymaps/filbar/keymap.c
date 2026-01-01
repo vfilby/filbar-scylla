@@ -58,8 +58,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define WORD_R A(KC_RIGHT)
 #define WORD_L A(KC_LEFT)
 #define LOGOUT G(C(KC_Q))
-#define K_UNDO G(KC_Z)
-#define K_REDO G(S(KC_Z))
+#define UNDO G(KC_Z)
+#define REDO G(S(KC_Z))
 
 // Layer short names
 #define SPC_NUM LT(_NUMBER,KC_SPC)
@@ -79,7 +79,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
         //,-----------------------------------------------------. --------  -------- ,-----------------------------------------------------.
             QK_GESC, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, QK_BOOT,   QK_BOOT,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_BSPC,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
-            KC_LCTL, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   KC_K,     KC_K,    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_QUOT,
+            KC_LCTL, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,    UNDO,      REDO,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_QUOT,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
             KC_LSFT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  KC_ESC,
         //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
@@ -113,9 +113,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
     [_NUMBER] = LAYOUT_split_3x6_3_ex2(
         //,-----------------------------------------------------. --------  -------- ,-----------------------------------------------------.
-            XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   KC_NO,     KC_NO,  KC_LBRC,    KC_7,    KC_8,    KC_9, KC_RBRC, KC_BSPC,
+            XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  LOGOUT,   KC_NO,     KC_NO,  KC_LBRC,    KC_7,    KC_8,    KC_9, KC_RBRC, KC_BSPC,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
-            XXXXXXX, KC_LGUI, KC_LALT, KC_LSFT, KC_BSLS, XXXXXXX,   KC_NO,     KC_NO,  KC_SCLN,    KC_4,    KC_5,    KC_6,  KC_EQL, XXXXXXX,
+            XXXXXXX, KC_LGUI, KC_LALT, KC_LSFT, KC_BSLS, XXXXXXX, _______,   _______,  KC_SCLN,    KC_4,    KC_5,    KC_6,  KC_EQL, XXXXXXX,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
             XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      KC_TILD,    KC_1,    KC_2,    KC_3, KC_BSLS, XXXXXXX,
         //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
@@ -218,18 +218,19 @@ static layer_color_config_t _get_layer_color_config(uint8_t layer) {
             config.default_color   = (HSV){HSV_GREEN};
             config.highlight_count = 0;
             break;
-        // case _NAV:
-        //     config.default_color = (HSV){HSV_BLUE};
-        //     // Arrow keys highlighted in white
-        //     config.highlights[0]   = (keycode_highlight_t){KC_UP, (HSV){HSV_WHITE}};
-        //     config.highlights[1]   = (keycode_highlight_t){KC_DOWN, (HSV){HSV_WHITE}};
-        //     config.highlights[2]   = (keycode_highlight_t){KC_LEFT, (HSV){HSV_WHITE}};
-        //     config.highlights[3]   = (keycode_highlight_t){KC_RGHT, (HSV){HSV_WHITE}};
-        //     config.highlight_count = 4;
-        //     break;
+        case _NAV:
+            config.default_color = (HSV){HSV_BLUE};
+            // Arrow keys highlighted in white
+            config.highlights[0]   = (keycode_highlight_t){KC_UP, (HSV){HSV_WHITE}};
+            config.highlights[1]   = (keycode_highlight_t){KC_DOWN, (HSV){HSV_WHITE}};
+            config.highlights[2]   = (keycode_highlight_t){KC_LEFT, (HSV){HSV_WHITE}};
+            config.highlights[3]   = (keycode_highlight_t){KC_RGHT, (HSV){HSV_WHITE}};
+            config.highlight_count = 4;
+            break;
         case _NUMBER:
             config.default_color   = (HSV){HSV_WHITE};
-            config.highlight_count = 0;
+            config.highlights[0]   = (keycode_highlight_t){LOGOUT, (HSV){HSV_RED}};
+            config.highlight_count = 1;
             break;
         // case _FUNCTION:
         //     config.default_color   = (HSV){HSV_YELLOW};
