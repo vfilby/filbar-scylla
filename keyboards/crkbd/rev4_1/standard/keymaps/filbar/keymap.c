@@ -122,7 +122,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
     [_NUMBER] = LAYOUT_split_3x6_3_ex2(
         //,-----------------------------------------------------. --------  -------- ,-----------------------------------------------------.
-             SW_APP, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  LOGOUT,   KC_NO,     KC_NO,  KC_LBRC,    KC_7,    KC_8,    KC_9, KC_RBRC, KC_BSPC,
+             SW_APP, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  LOGOUT, XXXXXXX,   XXXXXXX,  KC_LBRC,    KC_7,    KC_8,    KC_9, KC_RBRC, KC_BSPC,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
              SW_WIN, KC_LGUI, KC_LALT, KC_LSFT, KC_BSLS, XXXXXXX, _______,   _______,  KC_SCLN,    KC_4,    KC_5,    KC_6,  KC_EQL, XXXXXXX,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
@@ -159,9 +159,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
     [_SYM] = LAYOUT_split_3x6_3_ex2(
         //,-----------------------------------------------------. --------  -------- ,-----------------------------------------------------.
-             KC_TAB, KC_EXLM,   KC_AT, KC_HASH,  KC_DLR, KC_PERC,   KC_NO,     KC_NO,  KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, KC_BSPC,
+             KC_TAB, KC_EXLM,   KC_AT, KC_HASH,  KC_DLR, KC_PERC,  XXXXXXX,  XXXXXXX,  KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, KC_BSPC,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
-            KC_LCTL, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   KC_NO,     KC_NO,  KC_MINS,  KC_EQL, KC_LBRC, KC_RBRC, KC_BSLS,  KC_GRV,
+            KC_LCTL, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  _______,  _______,  KC_MINS,  KC_EQL, KC_LBRC, KC_RBRC, KC_BSLS,  KC_GRV,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
             KC_LSFT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      KC_UNDS, KC_PLUS, KC_LCBR, KC_RCBR, KC_PIPE, KC_TILD,
         //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
@@ -171,11 +171,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
     [_MEDIA] = LAYOUT_split_3x6_3_ex2(
         //,-----------------------------------------------------. --------  -------- ,-----------------------------------------------------.
-            XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX,  XXXXXXX,  KC_MUTE, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+            XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX, KC_VOLD, KC_MUTE, KC_VOLU, XXXXXXX, XXXXXXX,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
-            XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX,  XXXXXXX,  KC_VOLU, KC_MRWD, KC_MPLY, KC_MFFD, XXXXXXX, XXXXXXX,
+            XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX, KC_MRWD, KC_MPLY, KC_MFFD, XXXXXXX, XXXXXXX,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
-            XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      KC_VOLD, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+            XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, KC_BRID, XXXXXXX, KC_BRIU, XXXXXXX, XXXXXXX,
         //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
                                                 XXXXXXX, XXXXXXX, XXXXXXX,    _______, _______, _______
         //                                    `--------------------------'  `--------------------------'
@@ -183,9 +183,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
     [_CONF] = LAYOUT_split_3x6_3_ex2(
         //,-----------------------------------------------------. --------  -------- ,-----------------------------------------------------.
-            QK_BOOT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   KC_NO,     KC_NO,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+            QK_BOOT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
-            RM_TOGG, RM_HUEU, RM_SATU, RM_VALU, XXXXXXX, XXXXXXX,   KC_NO,     KC_NO,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+            RM_TOGG, RM_HUEU, RM_SATU, RM_VALU, XXXXXXX, XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
             RM_NEXT, RM_HUED, RM_SATD, RM_VALD, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
         //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
@@ -279,6 +279,8 @@ static layer_color_config_t _get_layer_color_config(uint8_t layer) {
             config.highlights[3]   = (keycode_highlight_t){KC_RGHT, (HSV){HSV_WHITE}};
             config.highlight_count = 4;
             break;
+        case _MOUSE:
+            config.default_color   = (HSV){HSV_GREEN};
         case _NUMBER:
             config.default_color   = (HSV){HSV_WHITE};
             config.highlights[0]   = (keycode_highlight_t){LOGOUT, (HSV){HSV_RED}};
@@ -294,6 +296,10 @@ static layer_color_config_t _get_layer_color_config(uint8_t layer) {
             break;
         case _SYM:
             config.default_color   = (HSV){HSV_PURPLE};
+            config.highlight_count = 0;
+            break;
+        case _MEDIA:
+            config.default_color   = (HSV){HSV_ORANGE};
             config.highlight_count = 0;
             break;
         default:
