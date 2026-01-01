@@ -20,29 +20,29 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "layers.h"
 
-// Left-hand home row mods for Colemak
-#define CMH_Z LGUI_T(KC_Z)
-#define CMH_X LALT_T(KC_X)
-#define CMH_C LSFT_T(KC_C)
-#define CMH_D LCTL_T(KC_D)
+// Left-hand home row mods for Colemak (ARST)
+#define CMH_A LGUI_T(KC_A)
+#define CMH_R LALT_T(KC_R)
+#define CMH_S LSFT_T(KC_S)
+#define CMH_T LCTL_T(KC_T)
 
-// Right-hand home row mods for Colemak
-#define CMH_SLSH RGUI_T(KC_SLSH)
-#define CMH_DOT LALT_T(KC_DOT)
-#define CMH_COMM RSFT_T(KC_COMM)
-#define CMH_H RCTL_T(KC_H)
+// Right-hand home row mods for Colemak (NEIO)
+#define CMH_O RGUI_T(KC_O)
+#define CMH_I LALT_T(KC_I)
+#define CMH_E RSFT_T(KC_E)
+#define CMH_N RCTL_T(KC_N)
 
-// Left-hand home row mods for QWERTY
-#define QMH_Z LGUI_T(KC_Z)
-#define QMH_X LALT_T(KC_X)
-#define QMH_C LSFT_T(KC_C)
-#define QMH_V LCTL_T(KC_V)
+// Left-hand home row mods for QWERTY (ASDF)
+#define QMH_A LGUI_T(KC_A)
+#define QMH_S LALT_T(KC_S)
+#define QMH_D LSFT_T(KC_D)
+#define QMH_F LCTL_T(KC_F)
 
-// Right-hand home row mods for QWERTY
-#define QMH_SLSH RGUI_T(KC_SLSH)
-#define QMH_DOT LALT_T(KC_DOT)
-#define QMH_COMM RSFT_T(KC_COMM)
-#define QMH_M RCTL_T(KC_M)
+// Right-hand home row mods for QWERTY (JKL;)
+#define QMH_SCLN RGUI_T(KC_SCLN)
+#define QMH_L LALT_T(KC_L)
+#define QMH_K RSFT_T(KC_K)
+#define QMH_J RCTL_T(KC_J)
 
 #define B_CONF LT(_CONF, KC_B)
 #define T_CONF LT(_CONF, KC_T)
@@ -72,9 +72,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
         //,-----------------------------------------------------. --------  -------- ,-----------------------------------------------------.
             _______,    KC_Q,    KC_W,    KC_E,    KC_R,  T_CONF, _______,   _______,     KC_Y,    KC_U,    KC_I,    KC_O,    KC_P, _______,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
-            _______,    KC_A,    KC_S,    KC_D,    KC_F,    KC_G, _______,   _______,     KC_H,    KC_J,    KC_K,    KC_L, KC_SCLN, _______,
+            _______,   QMH_A,   QMH_S,   QMH_D,   QMH_F,    KC_G, _______,   _______,     KC_H,   QMH_J,   QMH_K,   QMH_L,QMH_SCLN, _______,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
-            _______,   QMH_Z,   QMH_X,   QMH_C,   QMH_V,    KC_B,                         KC_N,   QMH_M,QMH_COMM, QMH_DOT,QMH_SLSH, _______,
+            _______,    KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,                         KC_N,    KC_M, KC_COMM,  KC_DOT, KC_SLSH, _______,
         //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
                                                 _______, _______, _______,    _______, _______, _______
         //                                    `--------------------------'  `--------------------------'
@@ -84,9 +84,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
         //,-----------------------------------------------------. --------  -------- ,-----------------------------------------------------.
             _______,    KC_Q,    KC_W,    KC_F,    KC_P,  B_CONF, _______,   _______,     KC_J,    KC_L,    KC_U,    KC_Y, KC_SCLN, _______,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
-            _______,    KC_A,    KC_R,    KC_S,    KC_T,    KC_G, _______,   _______,     KC_M,    KC_N,    KC_E,    KC_I,    KC_O, _______,
+            _______,   CMH_A,   CMH_R,   CMH_S,   CMH_T,    KC_G, _______,   _______,     KC_M,   CMH_N,   CMH_E,   CMH_I,   CMH_O, _______,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
-            _______,   CMH_Z,   CMH_X,   CMH_C,   CMH_D,    KC_V,                         KC_K,   CMH_H,CMH_COMM, CMH_DOT,CMH_SLSH, _______,
+            _______,    KC_Z,    KC_X,    KC_C,    KC_D,    KC_V,                         KC_K,    KC_H, KC_COMM,  KC_DOT, KC_SLSH, _______,
         //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
                                                 _______, _______, _______,    _______, _______, _______
         //                                    `--------------------------'  `--------------------------'
@@ -131,6 +131,21 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
 void keyboard_post_init_user(void) {
     default_layer_set(1 << DEFAULT_LAYER);
+}
+
+/* This is needed to handle retro shift for the tap-hold mods on the home row.
+ * Without this they will not be shifted.
+ *
+ * When tapping and holding a home-row mod, if you hold it and release longer
+ * than the auto shift timeout, but less than the retro shift timeout then you
+ * will get the shifted tap key. If you hold it longer than retro-shift timeout
+ * you will get the unshifted keystroke and the mod will be held until release.
+ *
+ * See: https://docs.qmk.fm/features/auto_shift#auto-shift-per-key
+ */
+bool get_custom_auto_shifted_key(uint16_t keycode, keyrecord_t *record) {
+    if (IS_RETRO(keycode)) return true;
+    return false;
 }
 
 #ifndef LAYER_INDICATOR_BRIGHTNESS_INC
