@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 enum crkbd_keycodes {
     SW_APP = SAFE_RANGE, // Switch app windows (cmd-tab)
     SW_WIN,              // Switch windows     (cmd-`)
+    KC_SCREENSHOT,       // cmd+shift+ctrl+4 (macOS screenshot to clipboard)
 };
 
 // Left-hand home row mods for Colemak (ARST)
@@ -194,6 +195,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     update_swapper(&sw_app_active, KC_LGUI, KC_TAB, SW_APP, keycode, record);
     update_swapper(&sw_win_active, KC_LGUI, KC_GRV, SW_WIN, keycode, record);
 
+    if (record->event.pressed) {
+        switch (keycode) {
+            case KC_SCREENSHOT:
+                tap_code16(LGUI(LSFT(LCTL(KC_4))));
+                return false;
+        }
+    }
+
     return true;
 }
 
@@ -331,3 +340,10 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     }
     return false;
 }
+
+// Combo definitions
+const uint16_t PROGMEM combo_screenshot[] = {KC_Q, KC_W, KC_F, KC_P, COMBO_END};
+
+combo_t key_combos[] = {
+    COMBO(combo_screenshot, KC_SCREENSHOT),
+};
