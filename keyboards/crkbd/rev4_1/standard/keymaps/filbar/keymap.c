@@ -20,6 +20,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include QMK_KEYBOARD_H
 
 #include "layers.h"
+#include "features/swapper.h"
+
+enum crkbd_keycodes {
+    SW_APP = SAFE_RANGE, // Switch app windows (cmd-tab)
+    SW_WIN,              // Switch windows     (cmd-`)
+};
 
 // Left-hand home row mods for Colemak (ARST)
 #define CMH_A LGUI_T(KC_A)
@@ -113,11 +119,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
     [_NUMBER] = LAYOUT_split_3x6_3_ex2(
         //,-----------------------------------------------------. --------  -------- ,-----------------------------------------------------.
-            XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  LOGOUT,   KC_NO,     KC_NO,  KC_LBRC,    KC_7,    KC_8,    KC_9, KC_RBRC, KC_BSPC,
+             SW_APP, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  LOGOUT,   KC_NO,     KC_NO,  KC_LBRC,    KC_7,    KC_8,    KC_9, KC_RBRC, KC_BSPC,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
-            XXXXXXX, KC_LGUI, KC_LALT, KC_LSFT, KC_BSLS, XXXXXXX, _______,   _______,  KC_SCLN,    KC_4,    KC_5,    KC_6,  KC_EQL, XXXXXXX,
+             SW_WIN, KC_LGUI, KC_LALT, KC_LSFT, KC_BSLS, XXXXXXX, _______,   _______,  KC_SCLN,    KC_4,    KC_5,    KC_6,  KC_EQL, XXXXXXX,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
-            XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      KC_TILD,    KC_1,    KC_2,    KC_3, KC_BSLS, XXXXXXX,
+            KC_LSFT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      KC_TILD,    KC_1,    KC_2,    KC_3, KC_BSLS, XXXXXXX,
         //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
                                                 _______, _______, _______,    KC_MINS,   KC_0, KC_DOT
         //                                    `--------------------------'  `--------------------------'
@@ -178,6 +184,17 @@ void keyboard_post_init_user(void) {
 bool get_custom_auto_shifted_key(uint16_t keycode, keyrecord_t *record) {
     if (IS_RETRO(keycode)) return true;
     return false;
+}
+
+/* Swapper state tracking */
+bool sw_app_active = false;
+bool sw_win_active = false;
+
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    update_swapper(&sw_app_active, KC_LGUI, KC_TAB, SW_APP, keycode, record);
+    update_swapper(&sw_win_active, KC_LGUI, KC_GRV, SW_WIN, keycode, record);
+
+    return true;
 }
 
 #ifndef LAYER_INDICATOR_BRIGHTNESS_INC
