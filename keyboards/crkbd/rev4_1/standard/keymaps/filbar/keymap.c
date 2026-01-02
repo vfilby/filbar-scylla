@@ -26,6 +26,8 @@ enum crkbd_keycodes {
     SW_APP = SAFE_RANGE, // Switch app windows (cmd-tab)
     SW_WIN,              // Switch windows     (cmd-`)
     KC_SCREENSHOT,       // cmd+shift+ctrl+4 (macOS screenshot to clipboard)
+    SMH_LPRN_KC,         // Custom keycode for Alt + ( mod-tap
+    SMH_RPRN_KC,         // Custom keycode for Shift + ) mod-tap
 };
 
 // Left-hand home row mods for Colemak (ARST)
@@ -53,9 +55,10 @@ enum crkbd_keycodes {
 #define QMH_J RCTL_T(KC_J)
 
 // Left-hand home row mods for SYM layer (brackets)
+// Note: ( and ) are shifted keys, so we use custom keycodes handled in process_record_user
 #define SMH_LBRC LGUI_T(KC_LBRC)
-#define SMH_LPRN LALT_T(KC_LPRN)
-#define SMH_RPRN LSFT_T(KC_RPRN)
+#define SMH_LPRN SMH_LPRN_KC
+#define SMH_RPRN SMH_RPRN_KC
 #define SMH_RBRC LCTL_T(KC_RBRC)
 
 #define B_CONF LT(_CONF, KC_B)
@@ -280,9 +283,41 @@ bool get_custom_auto_shifted_key(uint16_t keycode, keyrecord_t *record) {
 bool sw_app_active = false;
 bool sw_win_active = false;
 
+/* Custom mod-tap state for shifted keys (parentheses)
+ * These track the press time to determine tap vs hold
+ */
+static uint16_t smh_lprn_timer = 0;
+static uint16_t smh_rprn_timer = 0;
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     update_swapper(&sw_app_active, KC_LGUI, KC_TAB, SW_APP, keycode, record);
     update_swapper(&sw_win_active, KC_LGUI, KC_GRV, SW_WIN, keycode, record);
+
+    // Handle custom mod-tap for parentheses (shifted keys can't use normal mod-tap)
+    switch (keycode) {
+        case SMH_LPRN_KC:
+            if (record->event.pressed) {
+                smh_lprn_timer = timer_read();
+                register_code(KC_LALT);
+            } else {
+                unregister_code(KC_LALT);
+                if (timer_elapsed(smh_lprn_timer) < TAPPING_TERM) {
+                    tap_code16(KC_LPRN);  // Tap: send (
+                }
+            }
+            return false;
+        case SMH_RPRN_KC:
+            if (record->event.pressed) {
+                smh_rprn_timer = timer_read();
+                register_code(KC_LSFT);
+            } else {
+                unregister_code(KC_LSFT);
+                if (timer_elapsed(smh_rprn_timer) < TAPPING_TERM) {
+                    tap_code16(KC_RPRN);  // Tap: send )
+                }
+            }
+            return false;
+    }
 
     // Handle Caps Word special cases
     // Must intercept here before the layer-tap/mod-tap resolves
