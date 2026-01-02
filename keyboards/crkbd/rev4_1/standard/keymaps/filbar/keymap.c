@@ -52,6 +52,12 @@ enum crkbd_keycodes {
 #define QMH_K RSFT_T(KC_K)
 #define QMH_J RCTL_T(KC_J)
 
+// Left-hand home row mods for SYM layer (brackets)
+#define SMH_LBRC LGUI_T(KC_LBRC)
+#define SMH_LPRN LALT_T(KC_LPRN)
+#define SMH_RPRN LSFT_T(KC_RPRN)
+#define SMH_RBRC LCTL_T(KC_RBRC)
+
 #define B_CONF LT(_CONF, KC_B)
 #define T_CONF LT(_CONF, KC_T)
 
@@ -161,13 +167,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
     [_SYM] = LAYOUT_split_3x6_3_ex2(
         //,-----------------------------------------------------. --------  -------- ,-----------------------------------------------------.
-            KC_TILD, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, _______,
+            KC_TILD, KC_EXLM,   KC_AT, KC_HASH,  KC_DLR, KC_PERC,  XXXXXXX,  XXXXXXX,  KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, _______,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
-            KC_GRV, KC_LBRC, KC_LPRN, KC_RPRN, KC_RBRC, XXXXXXX,  _______,  _______,  KC_MINS,  KC_DLR, KC_PERC, KC_CIRC,  KC_BSLS, _______,
+             KC_GRV,SMH_LBRC,SMH_LPRN,SMH_RPRN,SMH_RBRC, XXXXXXX,  _______,  _______,  KC_TILD, KC_DQUO, KC_QUOT, KC_MINS, KC_UNDS, KC_BSLS,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
-            _______,   KC_LT, KC_LCBR, KC_RCBR,   KC_GT, XXXXXXX,                      KC_UNDS, KC_EXLM,   KC_AT, KC_HASH, KC_PIPE, _______,
+            _______,   KC_LT, KC_LCBR, KC_RCBR,   KC_GT, XXXXXXX,                      KC_SLSH, KC_EXLM, KC_PIPE, XXXXXXX, KC_QUES,  KC_GRV,
         //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
-                                                _______, _______,_______,    _______, _______, _______
+                                                _______, KC_BSPC,_______,    _______, _______, _______
         //                                    `--------------------------'  `--------------------------'
     ),
 
@@ -224,6 +230,35 @@ void keyboard_post_init_user(void) {
     default_layer_set(1 << DEFAULT_LAYER);
 }
 
+/* Caps Word customization
+ * Space -> underscore is handled in process_record_user
+ * This handles letters, numbers, and mod-tap keys (for home row mods)
+ */
+bool caps_word_press_user(uint16_t keycode) {
+    // Extract the base keycode for mod-tap and layer-tap keys
+    switch (keycode) {
+        case QK_MOD_TAP ... QK_MOD_TAP_MAX:
+        case QK_LAYER_TAP ... QK_LAYER_TAP_MAX:
+            // Get the tap keycode (lower 8 bits)
+            keycode = keycode & 0xFF;
+            break;
+    }
+
+    switch (keycode) {
+        case KC_A ... KC_Z:
+            add_weak_mods(MOD_BIT(KC_LSFT));
+            return true;
+        case KC_1 ... KC_0:
+        case KC_BSPC:
+        case KC_DEL:
+        case KC_MINS:
+        case KC_UNDS:
+            return true;
+        default:
+            return false;
+    }
+}
+
 /* This is needed to handle retro shift for the tap-hold mods on the home row.
  * Without this they will not be shifted.
  *
@@ -235,6 +270,8 @@ void keyboard_post_init_user(void) {
  * See: https://docs.qmk.fm/features/auto_shift#auto-shift-per-key
  */
 bool get_custom_auto_shifted_key(uint16_t keycode, keyrecord_t *record) {
+    // Disable auto-shift during Caps Word to prevent conflicts
+    if (is_caps_word_on()) return false;
     if (IS_RETRO(keycode)) return true;
     return false;
 }
@@ -246,6 +283,26 @@ bool sw_win_active = false;
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     update_swapper(&sw_app_active, KC_LGUI, KC_TAB, SW_APP, keycode, record);
     update_swapper(&sw_win_active, KC_LGUI, KC_GRV, SW_WIN, keycode, record);
+
+    // Handle Caps Word special cases
+    // Must intercept here before the layer-tap/mod-tap resolves
+    if (is_caps_word_on() && record->event.pressed) {
+        // Check for layer-tap keys with space as the tap action
+        if ((keycode >= QK_LAYER_TAP && keycode <= QK_LAYER_TAP_MAX) &&
+            (keycode & 0xFF) == KC_SPC) {
+            tap_code16(KC_UNDS);
+            return false;  // Don't process the layer-tap
+        }
+
+        // Disable home row mods during Caps Word - send the letter directly
+        if (keycode >= QK_MOD_TAP && keycode <= QK_MOD_TAP_MAX) {
+            uint8_t base_keycode = keycode & 0xFF;
+            if (base_keycode >= KC_A && base_keycode <= KC_Z) {
+                tap_code16(S(base_keycode));  // Send shifted letter
+                return false;  // Don't process the mod-tap
+            }
+        }
+    }
 
     if (record->event.pressed) {
         switch (keycode) {

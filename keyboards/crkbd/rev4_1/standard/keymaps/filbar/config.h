@@ -29,6 +29,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define SPLIT_LAYER_STATE_ENABLE
 
+// Caps Word: activate by pressing both shift keys simultaneously
+#define BOTH_SHIFTS_TURNS_ON_CAPS_WORD
+
 // Combo settings
 #define COMBO_TERM 150  // Time window to press combo keys (in milliseconds)
 
