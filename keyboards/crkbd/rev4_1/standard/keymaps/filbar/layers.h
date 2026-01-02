@@ -10,6 +10,7 @@ enum corne_layers {
     _MOUSE,
     _SYM,
     _MEDIA,
-//    _FUNCTION,
+    _FUNCTION,
+    _SPECIAL,
     _CONF,
 };
