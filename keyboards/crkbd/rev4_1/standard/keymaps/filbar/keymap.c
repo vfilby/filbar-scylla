@@ -20,6 +20,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "keymap_us.h"
 #include QMK_KEYBOARD_H
 #include "transactions.h"
+#ifdef CONSOLE_ENABLE
+#include "print.h"
+#endif
 
 #include "layers.h"
 #include "features/swapper.h"
@@ -238,17 +241,32 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 static bool caps_word_state_synced = false;  // Slave-side copy of Caps Word state
 
 void caps_word_sync_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
+#ifdef CONSOLE_ENABLE
+    uprintf("caps_word_sync_handler: in_buflen=%d\n", in_buflen);
+#endif
     const bool* master_state = (const bool*)in_data;
     caps_word_state_synced = *master_state;
 }
 
 void keyboard_post_init_user(void) {
+#ifdef CONSOLE_ENABLE
+    uprintf("keyboard_post_init_user: start, master=%d\n", is_keyboard_master());
+#endif
     default_layer_set(1 << DEFAULT_LAYER);
     // Register the split transaction handler for Caps Word sync
     transaction_register_rpc(USER_SYNC_CAPS_WORD, caps_word_sync_handler);
+#ifdef CONSOLE_ENABLE
+    uprintf("keyboard_post_init_user: done\n");
+#endif
 }
 
 void housekeeping_task_user(void) {
+#ifdef CONSOLE_ENABLE
+    static uint32_t last_debug_time = 0;
+    static uint32_t housekeeping_count = 0;
+    housekeeping_count++;
+#endif
+
     // Only run on master side
     if (is_keyboard_master()) {
         static bool last_caps_word_state = false;
@@ -256,11 +274,24 @@ void housekeeping_task_user(void) {
 
         // Only sync when state changes to reduce traffic
         if (current_state != last_caps_word_state) {
+#ifdef CONSOLE_ENABLE
+            uprintf("housekeeping: caps_word changed to %d\n", current_state);
+#endif
             if (transaction_rpc_send(USER_SYNC_CAPS_WORD, sizeof(current_state), &current_state)) {
                 last_caps_word_state = current_state;
             }
         }
     }
+
+#ifdef CONSOLE_ENABLE
+    // Periodic heartbeat debug (every 5 seconds)
+    if (timer_elapsed32(last_debug_time) > 5000) {
+        uprintf("heartbeat: master=%d, layer=%d, hk_calls=%lu, uptime=%lus\n",
+                is_keyboard_master(), get_highest_layer(layer_state),
+                housekeeping_count, timer_read32() / 1000);
+        last_debug_time = timer_read32();
+    }
+#endif
 }
 
 /* Helper to check Caps Word state on either half */
@@ -329,6 +360,11 @@ static uint16_t smh_lprn_timer = 0;
 static uint16_t smh_rprn_timer = 0;
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+#ifdef CONSOLE_ENABLE
+    uprintf("key: 0x%04X %s r=%d c=%d\n", keycode, record->event.pressed ? "DN" : "UP",
+            record->event.key.row, record->event.key.col);
+#endif
+
     update_swapper(&sw_app_active, KC_LGUI, KC_TAB, SW_APP, keycode, record);
     update_swapper(&sw_win_active, KC_LGUI, KC_GRV, SW_WIN, keycode, record);
 
@@ -393,7 +429,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 #    define LAYER_INDICATOR_BRIGHTNESS_INC 22
 #endif
 
-/* RGB Layer Color Configuration
+/* RGB Layer Color ConfigurationA
  *
  * This structure allows you to define:
  * - Default color for each layer
@@ -438,6 +474,8 @@ static layer_color_config_t _get_layer_color_config(uint8_t layer) {
             break;
         case _MOUSE:
             config.default_color   = (HSV){HSV_GREEN};
+            config.highlight_count = 0;
+            break;
         case _NUMBER:
             config.default_color   = (HSV){HSV_WHITE};
             config.highlights[0]   = (keycode_highlight_t){LOGOUT, (HSV){HSV_RED}};
@@ -520,11 +558,13 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 
     /* For typing layers light the whole keyboard, just set the hue and keep the matrix effects */
     if (layer <= _COLEMAK) {
-        for (uint8_t layer = _BASE; layer < _CONF; layer++) {
-            if (default_layer_state & (1 << layer)) {
-                layer_color_config_t config = _get_layer_color_config(layer);
-                rgblight_sethsv(config.default_color.h, config.default_color.s, config.default_color.v);
-            }
+        // Only update RGB when default layer changes, not every frame
+        static layer_state_t last_default_layer = 0;
+        if (default_layer_state != last_default_layer) {
+            last_default_layer = default_layer_state;
+            uint8_t default_layer = get_highest_layer(default_layer_state);
+            layer_color_config_t config = _get_layer_color_config(default_layer);
+            rgblight_sethsv(config.default_color.h, config.default_color.s, config.default_color.v);
         }
 
         /* For special layers use lighting that reflects the keybindings. */
