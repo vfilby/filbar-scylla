@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "keycodes.h"
+#include "keymap_us.h"
 #include QMK_KEYBOARD_H
 #include "transactions.h"
 
@@ -175,7 +176,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
              KC_GRV,SMH_LBRC,SMH_LPRN,SMH_RPRN,SMH_RBRC, XXXXXXX,  _______,  _______,  KC_TILD, KC_DQUO, KC_QUOT, KC_MINS, KC_UNDS, KC_BSLS,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
-            _______,   KC_LT, KC_LCBR, KC_RCBR,   KC_GT, XXXXXXX,                      KC_SLSH, KC_EXLM, KC_PIPE, XXXXXXX, KC_QUES,  KC_GRV,
+            _______,   KC_LT, KC_LCBR, KC_RCBR,   KC_GT, XXXXXXX,                      KC_SLSH, KC_EXLM, KC_PIPE, KC_COLN, KC_QUES,  KC_GRV,
         //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
                                                 _______, KC_BSPC,_______,    _______, _______, _______
         //                                    `--------------------------'  `--------------------------'
