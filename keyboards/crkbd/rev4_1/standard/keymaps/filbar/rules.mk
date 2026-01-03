@@ -7,6 +7,6 @@ COMBO_ENABLE = yes
 LAYER_LOCK_ENABLE = yes
 
 # Debug console - set to 'yes' to enable debug logging via 'qmk console'
-CONSOLE_ENABLE = no
+CONSOLE_ENABLE = yes
 
 SRC += features/swapper.c

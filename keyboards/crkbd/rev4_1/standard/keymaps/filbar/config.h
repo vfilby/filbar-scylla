@@ -41,6 +41,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Combo settings
 #define COMBO_TERM 150  // Time window to press combo keys (in milliseconds)
 
+// Debug: monitor matrix scan rate for performance issues
+#define DEBUG_MATRIX_SCAN_RATE
+
 #ifdef RGBLIGHT_ENABLE
     #define RGBLIGHT_EFFECT_BREATHING
     #define RGBLIGHT_EFFECT_RAINBOW_MOOD

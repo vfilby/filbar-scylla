@@ -88,7 +88,6 @@ enum crkbd_keycodes {
 #define L_NUM MO(_NUMBER)
 #define L_FUNC MO(_FUNCTION)
 #define L_SPECIAL MO(_SPECIAL)
-#define TAB_SYM LT(_SYM, KC_TAB)
 #define BSPC_NAV LT(_NAV, KC_BSPC)
 #define DEL_MOUS LT(_MOUSE, KC_DEL)
 #define ENT_MED LT(_MEDIA, KC_ENT)
@@ -104,11 +103,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
         //,-----------------------------------------------------. --------  -------- ,-----------------------------------------------------.
             QK_GESC, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  L_FUNC, L_SPECIAL,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_BSPC,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
-            KC_LCTL, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,    UNDO,      REDO,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_QUOT,
+             KC_TAB, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,    UNDO,      REDO,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_QUOT,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
             KC_LSFT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_RSFT,
         //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
-                                                KC_LGUI,BSPC_NAV, SPC_NUM,    ENT_MED, TAB_SYM, DEL_MOUS
+                                                KC_LGUI,BSPC_NAV, SPC_NUM,    ENT_MED,MO(_SYM), DEL_MOUS
         //                                    `--------------------------'  `--------------------------'
     ),
 
@@ -600,13 +599,11 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 
 // Combo definitions
 const uint16_t PROGMEM combo_screenshot[] = {KC_Q, KC_W, KC_F, KC_P, COMBO_END};
-const uint16_t PROGMEM combo_copy[] = {KC_Z, KC_X, COMBO_END};
-const uint16_t PROGMEM combo_cut[] = {KC_X, KC_C, COMBO_END};
-const uint16_t PROGMEM combo_paste[] = {KC_C, KC_D, COMBO_END};
+const uint16_t PROGMEM combo_copy[] = {KC_Z, KC_X, KC_C, COMBO_END};
+const uint16_t PROGMEM combo_paste[] = {KC_X, KC_C, KC_D, COMBO_END};
 
 combo_t key_combos[] = {
     COMBO(combo_screenshot, KC_SCREENSHOT),
     COMBO(combo_copy, G(KC_C)),   // Cmd+C
-    COMBO(combo_cut, G(KC_X)),    // Cmd+X
     COMBO(combo_paste, G(KC_V)),  // Cmd+V
 };
