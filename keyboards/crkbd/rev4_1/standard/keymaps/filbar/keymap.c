@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "keycodes.h"
 #include QMK_KEYBOARD_H
+#include "transactions.h"
 
 #include "layers.h"
 #include "features/swapper.h"
@@ -218,7 +219,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
     [_CONF] = LAYOUT_split_3x6_3_ex2(
         //,-----------------------------------------------------. --------  -------- ,-----------------------------------------------------.
-            QK_BOOT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+            QK_BOOT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX,  XXXXXXX,QK_REBOOT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
             RM_TOGG, RM_HUEU, RM_SATU, RM_VALU, XXXXXXX, XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
@@ -229,8 +230,45 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
     )
 };
 
+/* Split keyboard Caps Word state sync
+ * The master sends its Caps Word state to the slave so both halves
+ * can show the breathing red LED indicator.
+ */
+static bool caps_word_state_synced = false;  // Slave-side copy of Caps Word state
+
+void caps_word_sync_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
+    const bool* master_state = (const bool*)in_data;
+    caps_word_state_synced = *master_state;
+}
+
 void keyboard_post_init_user(void) {
     default_layer_set(1 << DEFAULT_LAYER);
+    // Register the split transaction handler for Caps Word sync
+    transaction_register_rpc(USER_SYNC_CAPS_WORD, caps_word_sync_handler);
+}
+
+void housekeeping_task_user(void) {
+    // Only run on master side
+    if (is_keyboard_master()) {
+        static bool last_caps_word_state = false;
+        bool current_state = is_caps_word_on();
+
+        // Only sync when state changes to reduce traffic
+        if (current_state != last_caps_word_state) {
+            if (transaction_rpc_send(USER_SYNC_CAPS_WORD, sizeof(current_state), &current_state)) {
+                last_caps_word_state = current_state;
+            }
+        }
+    }
+}
+
+/* Helper to check Caps Word state on either half */
+static bool is_caps_word_active(void) {
+    if (is_keyboard_master()) {
+        return is_caps_word_on();
+    } else {
+        return caps_word_state_synced;
+    }
 }
 
 /* Caps Word customization
@@ -449,6 +487,34 @@ static HSV _get_keycode_color(uint8_t layer, uint16_t keycode) {
  * NOTE: Any changes to this function must be flashed to both halves.
  */
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+    /* Caps Word indicator: breathing red effect on all LEDs */
+    if (is_caps_word_active()) {
+        // Create a breathing effect using a triangle wave
+        // timer_read() returns ms, we want a ~2 second cycle
+        uint16_t time = timer_read();
+        uint8_t phase = (time / 8) % 256;  // 8ms per step, ~2 sec full cycle
+
+        // Triangle wave: ramp up 0-127, ramp down 128-255
+        uint8_t triangle;
+        if (phase < 128) {
+            triangle = phase * 2;  // 0 -> 254
+        } else {
+            triangle = (255 - phase) * 2;  // 254 -> 0
+        }
+
+        // Scale to range 80-255 (avoid going completely dark)
+        uint8_t val = 80 + (triangle * 175 / 255);
+
+        HSV hsv = {HSV_RED};
+        hsv.v = val;
+        RGB rgb = hsv_to_rgb(hsv);
+
+        for (uint8_t i = led_min; i < led_max; i++) {
+            rgb_matrix_set_color(i, rgb.r, rgb.g, rgb.b);
+        }
+        return false;  // Skip normal layer indicators during Caps Word
+    }
+
     const uint8_t layer = get_highest_layer(layer_state);
 
     /* For typing layers light the whole keyboard, just set the hue and keep the matrix effects */
