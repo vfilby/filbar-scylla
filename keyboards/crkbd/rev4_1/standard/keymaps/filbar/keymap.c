@@ -137,13 +137,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
     [_NUMBER] = LAYOUT_split_3x6_3_ex2(
         //,-----------------------------------------------------. --------  -------- ,-----------------------------------------------------.
-             SW_APP, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  LOGOUT, XXXXXXX,   XXXXXXX,  KC_LBRC,    KC_7,    KC_8,    KC_9, KC_RBRC, _______,
+             SW_APP, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  LOGOUT, XXXXXXX,   XXXXXXX,  KC_LBRC,   KC_P7,   KC_P8,   KC_P9, KC_RBRC, _______,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
-             SW_WIN, KC_LGUI, KC_LALT, KC_LSFT, KC_BSLS, XXXXXXX, _______,   _______,  KC_SCLN,    KC_4,    KC_5,    KC_6,  KC_EQL, _______,
+             SW_WIN, KC_LGUI, KC_LALT, KC_LSFT, KC_BSLS, XXXXXXX, _______,   _______,  KC_SCLN,   KC_P4,   KC_P5,   KC_P6,  KC_EQL, _______,
         //|--------+--------+--------+--------+--------+--------| --------  -------- |--------+--------+--------+--------+--------+--------|
-            _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      KC_TILD,    KC_1,    KC_2,    KC_3, KC_BSLS, _______,
+            _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      KC_TILD,   KC_P1,   KC_P2,   KC_P3, KC_BSLS, _______,
         //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
-                                                _______, _______, _______,    KC_MINS,   KC_0, KC_DOT
+                                                _______, _______, _______,    KC_PMNS,   KC_P0, KC_PDOT
         //                                    `--------------------------'  `--------------------------'
     ),
 
@@ -252,10 +252,24 @@ void keyboard_post_init_user(void) {
     uprintf("keyboard_post_init_user: start, master=%d\n", is_keyboard_master());
 #endif
     default_layer_set(1 << DEFAULT_LAYER);
+    // DISABLED FOR DEBUGGING: Caps Word sync may be causing USB disconnects
     // Register the split transaction handler for Caps Word sync
-    transaction_register_rpc(USER_SYNC_CAPS_WORD, caps_word_sync_handler);
+    // transaction_register_rpc(USER_SYNC_CAPS_WORD, caps_word_sync_handler);
 #ifdef CONSOLE_ENABLE
     uprintf("keyboard_post_init_user: done\n");
+#endif
+}
+
+/* USB suspend/resume callbacks for debugging */
+void suspend_power_down_user(void) {
+#ifdef CONSOLE_ENABLE
+    uprintf("USB: suspend (power down)\n");
+#endif
+}
+
+void suspend_wakeup_init_user(void) {
+#ifdef CONSOLE_ENABLE
+    uprintf("USB: wakeup (resume)\n");
 #endif
 }
 
@@ -263,31 +277,76 @@ void housekeeping_task_user(void) {
 #ifdef CONSOLE_ENABLE
     static uint32_t last_debug_time = 0;
     static uint32_t housekeeping_count = 0;
+    static uint8_t last_layer = 255;
+    static uint8_t last_mods = 0;
+    static uint16_t last_scan_rate = 0;
+    static uint8_t last_weak_mods = 0;
+    static uint8_t last_oneshot_mods = 0;
     housekeeping_count++;
 #endif
 
+    // DISABLED FOR DEBUGGING: Caps Word sync may be causing USB disconnects
     // Only run on master side
-    if (is_keyboard_master()) {
-        static bool last_caps_word_state = false;
-        bool current_state = is_caps_word_on();
+    // if (is_keyboard_master()) {
+    //     static bool last_caps_word_state = false;
+    //     bool current_state = is_caps_word_on();
+    //
+    //     // Only sync when state changes to reduce traffic
+    //     if (current_state != last_caps_word_state) {
+    //         if (transaction_rpc_send(USER_SYNC_CAPS_WORD, sizeof(current_state), &current_state)) {
+    //             last_caps_word_state = current_state;
+    //         }
+    //     }
+    // }
 
-        // Only sync when state changes to reduce traffic
-        if (current_state != last_caps_word_state) {
 #ifdef CONSOLE_ENABLE
-            uprintf("housekeeping: caps_word changed to %d\n", current_state);
-#endif
-            if (transaction_rpc_send(USER_SYNC_CAPS_WORD, sizeof(current_state), &current_state)) {
-                last_caps_word_state = current_state;
-            }
-        }
+    // Log layer changes immediately
+    uint8_t current_layer = get_highest_layer(layer_state);
+    if (current_layer != last_layer) {
+        uprintf("layer: %d -> %d\n", last_layer, current_layer);
+        last_layer = current_layer;
     }
 
-#ifdef CONSOLE_ENABLE
+    // Log modifier changes (regular mods)
+    uint8_t current_mods = get_mods();
+    if (current_mods != last_mods) {
+        uprintf("mods: 0x%02X -> 0x%02X\n", last_mods, current_mods);
+        last_mods = current_mods;
+    }
+
+    // Log weak modifier changes
+    uint8_t current_weak_mods = get_weak_mods();
+    if (current_weak_mods != last_weak_mods) {
+        uprintf("weak_mods: 0x%02X -> 0x%02X\n", last_weak_mods, current_weak_mods);
+        last_weak_mods = current_weak_mods;
+    }
+
+    // Log oneshot modifier changes
+    uint8_t current_oneshot_mods = get_oneshot_mods();
+    if (current_oneshot_mods != last_oneshot_mods) {
+        uprintf("oneshot_mods: 0x%02X -> 0x%02X\n", last_oneshot_mods, current_oneshot_mods);
+        last_oneshot_mods = current_oneshot_mods;
+    }
+
     // Periodic heartbeat debug (every 5 seconds)
     if (timer_elapsed32(last_debug_time) > 5000) {
+        uint16_t scan_rate = get_matrix_scan_rate();
         uprintf("heartbeat: master=%d, layer=%d, hk_calls=%lu, uptime=%lus\n",
                 is_keyboard_master(), get_highest_layer(layer_state),
                 housekeeping_count, timer_read32() / 1000);
+
+        // Log scan rate changes (indicates performance issues)
+        if (scan_rate < last_scan_rate - 100 || scan_rate > last_scan_rate + 100) {
+            uprintf("scan_rate: %u -> %u\n", last_scan_rate, scan_rate);
+            last_scan_rate = scan_rate;
+        }
+
+        // Log all keyboard state for debugging
+        uprintf("state: layer_state=0x%08lX, default_layer=0x%08lX, mods=0x%02X, weak=0x%02X, oneshot=0x%02X\n",
+                (unsigned long)layer_state, (unsigned long)default_layer_state,
+                get_mods(), get_weak_mods(), get_oneshot_mods());
+
+
         last_debug_time = timer_read32();
     }
 #endif

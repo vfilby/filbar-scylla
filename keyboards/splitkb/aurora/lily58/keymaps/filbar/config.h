@@ -29,6 +29,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 /* Needed for LED indicators to work across both halves */
 #define SPLIT_LAYER_STATE_ENABLE
+#define SPLIT_LED_STATE_ENABLE   // Sync Caps Lock/Num Lock/Scroll Lock state across halves
+#define SPLIT_MODS_ENABLE        // Sync modifier state
+#define SPLIT_ACTIVITY_ENABLE    // Sync activity timestamps
+
+// Custom split transaction for Caps Word state sync
+#define SPLIT_TRANSACTION_IDS_USER USER_SYNC_CAPS_WORD
+
+// Caps Word: activate by pressing both shift keys simultaneously
+#define BOTH_SHIFTS_TURNS_ON_CAPS_WORD
 
 #define SPLIT_WPM_ENABLE
 

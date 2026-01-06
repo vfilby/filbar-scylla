@@ -5,8 +5,9 @@
  * Getting retro shift to work with tap-hold mods: https://www.reddit.com/r/qmk/comments/10k1oya/autoshift_with_homerow_mods/
  */
 
+#include "keycodes.h"
 #include QMK_KEYBOARD_H
-#include "features/layer_lock.h"
+#include "transactions.h"
 #include "features/swapper.h"
 #include "oled.h"
 #include "layers.h"
@@ -39,17 +40,21 @@ static mod_hold_tracker_t mod_hold_trackers[8]    = {0}; // Track up to 8 mod ke
 static uint8_t            mod_hold_count          = 0;
 static bool               caps_word_active        = false; // Track caps word state for LED management
 static uint32_t           mod_hold_flash_end_time = 0;     // When the mod hold flash should end
+static uint16_t           smh_lprn_timer          = 0;     // Timer for SMH_LPRN custom mod-tap
+static uint16_t           smh_rprn_timer          = 0;     // Timer for SMH_RPRN custom mod-tap
+static uint8_t            last_rgb_layer          = 255;   // Track last layer for RGB caching (255 = unset)
 
 #define DEFAULT_LAYER _COLEMAK
 
 enum lily_keycodes {
-    LLOCK = SAFE_RANGE,
-    SW_APP,        // Switch app windows (cmd-tab, with shift for reverse)
-    SW_WIN,        // Switch apps        (cmd-`)
-    KC_RD_ARROW,   // ->
-    KC_LD_ARROW,   // <-
-    KC_SCREENSHOT, // cmd+shift+ctrl+4
-    KC_EMDASH      // em dash
+    SW_APP = SAFE_RANGE, // Switch app windows (cmd-tab, with shift for reverse)
+    SW_WIN,              // Switch apps        (cmd-`)
+    KC_RD_ARROW,         // ->
+    KC_LD_ARROW,         // <-
+    KC_SCREENSHOT,       // cmd+shift+ctrl+4
+    KC_EMDASH,           // em dash
+    SMH_LPRN_KC,         // Custom keycode for Alt + ( mod-tap
+    SMH_RPRN_KC,         // Custom keycode for Shift + ) mod-tap
 };
 
 /*
@@ -72,29 +77,41 @@ enum lily_keycodes {
 #define T_ENTSH LSFT_T(KC_ENT)
 #define T_ENTFUN LT(_FUNCTION, KC_ENT)
 
-// Left-hand home row mods for Colemak
-#define CMH_Z LGUI_T(KC_Z)
-#define CMH_X LALT_T(KC_X)
-#define CMH_C LSFT_T(KC_C)
-#define CMH_D LCTL_T(KC_D)
+// Left-hand home row mods for Colemak (ARST) - matches Corne
+#define CMH_A LGUI_T(KC_A)
+#define CMH_R LALT_T(KC_R)
+#define CMH_S LSFT_T(KC_S)
+#define CMH_T LCTL_T(KC_T)
 
-// Right-hand home row mods for Colemak
-#define CMH_SLSH RGUI_T(KC_SLSH)
-#define CMH_DOT LALT_T(KC_DOT)
-#define CMH_COMM RSFT_T(KC_COMM)
-#define CMH_H RCTL_T(KC_H)
+// Right-hand home row mods for Colemak (NEIO) - matches Corne
+#define CMH_O RGUI_T(KC_O)
+#define CMH_I LALT_T(KC_I)
+#define CMH_E RSFT_T(KC_E)
+#define CMH_N RCTL_T(KC_N)
 
-// Left-hand home row mods for Qwerty
-#define QMH_Z LGUI_T(KC_Z)
-#define QMH_X LALT_T(KC_X)
-#define QMH_C LSFT_T(KC_C)
-#define QMH_V LCTL_T(KC_V)
+// Left-hand home row mods for QWERTY (ASDF) - matches Corne
+#define QMH_A LGUI_T(KC_A)
+#define QMH_S LALT_T(KC_S)
+#define QMH_D LSFT_T(KC_D)
+#define QMH_F LCTL_T(KC_F)
 
-// Right-hand home row mods for Qwerty
-#define QMH_M LALT_T(KC_M)
-#define QMH_N RSFT_T(KC_N)
-#define QMH_COMM RCTL_T(KC_COMM)
-#define QMH_DOT RGUI_T(KC_DOT)
+// Right-hand home row mods for QWERTY (JKL;) - matches Corne
+#define QMH_SCLN RGUI_T(KC_SCLN)
+#define QMH_L LALT_T(KC_L)
+#define QMH_K RSFT_T(KC_K)
+#define QMH_J RCTL_T(KC_J)
+
+// Left-hand home row mods for SYM layer (brackets) - matches Corne
+#define SMH_LBRC LGUI_T(KC_LBRC)
+#define SMH_LPRN SMH_LPRN_KC
+#define SMH_RPRN SMH_RPRN_KC
+#define SMH_RBRC LCTL_T(KC_RBRC)
+
+// Layer short names - matches Corne
+#define SPC_NUM LT(_NUMBER,KC_SPC)
+#define BSPC_NAV LT(_NAV, KC_BSPC)
+#define DEL_MOUS LT(_MOUSE, KC_DEL)
+#define ENT_MED LT(_MEDIA, KC_ENT)
 
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -117,9 +134,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 [_BASE] = LAYOUT(
    QK_GESC, KC_1,    KC_2,    KC_3,    KC_4,    LT(_CONF, KC_5),              KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_BSPC,
    KC_TAB,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
-   T_ENTSH, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
-   KC_LGUI, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, T_ENTFUN,   KC_BSPC, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
-                     KC_LCTL, KC_LGUI, KC_BSPC,LT(_NUMBER,KC_SPC),          LT(_NAV, KC_ENT),  MO(_RAISE), KC_RALT, KC_LGUI
+   T_ENTSH, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_QUOT,
+   KC_LSFT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, T_ENTFUN,   KC_BSPC, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_RSFT,
+                     KC_LCTL, KC_LGUI, BSPC_NAV, SPC_NUM,              ENT_MED,MO(_SYM), DEL_MOUS, KC_LGUI
 ),
 
 /* COLEMAK-dhm
@@ -140,8 +157,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 [_COLEMAK] = LAYOUT(
    _______, _______, _______, _______, _______, _______,                    _______, _______, _______, _______, _______, _______,
    _______, KC_Q,    KC_W,    KC_F,    KC_P,    KC_B,                       KC_J,    KC_L,    KC_U,    KC_Y,    KC_SCLN, KC_MINS,
-   _______, KC_A,    KC_R,    KC_S,    KC_T,    KC_G,                       KC_M,    KC_N,    KC_E,    KC_I,    KC_O,    KC_QUOT,
-   _______, CMH_Z,   CMH_X,   CMH_C,   CMH_D,   KC_V,  _______,   _______,  KC_K,    CMH_H,   CMH_COMM,CMH_DOT, CMH_SLSH,KC_BSLS,
+   _______, CMH_A,   CMH_R,   CMH_S,   CMH_T,   KC_G,                       KC_M,    CMH_N,   CMH_E,   CMH_I,   CMH_O,   _______,
+   _______, KC_Z,    KC_X,    KC_C,    KC_D,    KC_V,  _______,   _______,  KC_K,    KC_H,    KC_COMM, KC_DOT,  KC_SLSH, _______,
                      _______, _______, _______, _______,           _______, _______, _______, _______
 ),
 
@@ -163,20 +180,20 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  [_QWERTY] = LAYOUT(
     _______, _______, _______, _______, _______, _______,                    _______, _______, _______, _______, _______, _______,
     _______, KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                       KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_MINS,
-    _______, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,                       KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,
-    _______, QMH_Z,   QMH_X,   QMH_C,   QMH_V,   KC_B,    _______,  _______, QMH_N,   QMH_M,   QMH_COMM,QMH_DOT, KC_SLSH, KC_BSLS,
+    _______, QMH_A,   QMH_S,   QMH_D,   QMH_F,   KC_G,                       KC_H,    QMH_J,   QMH_K,   QMH_L,   QMH_SCLN,_______,
+    _______, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    _______,  _______, KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, _______,
                       _______, _______, _______, _______,                    _______, _______, _______, _______
 ),
 
 /* Numbers
  * ,-----------------------------------------.                    ,-----------------------------------------.
- * |SW_WIN| Shft |SW_WIN|SW_APP| Shft |LOGOUT|                    |      |   (  |   :  |   )  |   _  | TRNS |
+ * |SW_APP|      |      |      |      |LOGOUT|                    |   [  |   7  |   8  |   9  |   ]  | TRNS |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * |SW_APP|  ⌘Q  |  ⌘W  |      |      |      |                    |   *  |   7  |   8  |   9  |   +  |      |
+ * |SW_WIN|      |      |      |      |      |                    |   ;  |   4  |   5  |   6  |   =  | TRNS |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * | Shft | SelAl| Cut  | Copy | Paste| CapsW|-------.    ,-------|   /  |   4  |   5  |   6  |   -  |   =  |
+ * | TRNS |  ⌘   |  ⌥   |  ⇧   |   ^  |      |-------.    ,-------|   ~  |   1  |   2  |   3  |   \  | TRNS |
  * |------+------+------+------+------+------|  UNDO |    | REDO  |------+------+------+------+------+------|
- * | TRNS |  ⌘   |  ⌥   |  ⇧   |   ^  |      |-------|    |-------|   .  |   1  |   2  |   3  |   0  |      |
+ * | TRNS |      |      |      |      |      |-------|    |-------|   -  |   0  |   .  |      |      | TRNS |
  * `-----------------------------------------/       /     \       \----------------------------------------'
  *                   |      |      |      | /  TRNS /       \ TRNS \  |      |      |      |
  *                   | TRNS | TRNS | TRNS |/       /         \      \ | TRNS | TRNS | TRNS |
@@ -184,57 +201,64 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  */
 
 [_NUMBER] = LAYOUT(
-    SW_WIN,  KC_LSFT, SW_WIN,  SW_APP,  XXXXXXX, LOGOUT,                     KC_LSFT, KC_LPRN, KC_COLN, KC_RPRN, KC_UNDS, _______,
-    SW_APP,  G(KC_Q), G(KC_W), XXXXXXX, XXXXXXX, XXXXXXX,                    KC_PAST, KC_7,    KC_8,    KC_9,    KC_PPLS, XXXXXXX,
-    KC_LSFT, G(KC_A), G(KC_X), G(KC_C), G(KC_V), CW_TOGG,                    KC_PSLS, KC_4,    KC_5,    KC_6,    KC_MINS, KC_EQL,
-    _______, KC_LGUI, KC_LALT, KC_LSFT, KC_LCTL, XXXXXXX, K_UNDO,   K_REDO,  KC_DOT,  KC_1,    KC_2,    KC_3,    KC_0,    XXXXXXX,
-                      _______, _______, _______, _______,                    _______, _______, _______, _______
+    SW_APP,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, LOGOUT,                     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,
+    SW_WIN,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    KC_LBRC, KC_7,    KC_8,    KC_9,    KC_RBRC,  _______,
+    _______, KC_LGUI, KC_LALT, KC_LSFT, KC_LCTL, XXXXXXX,                    KC_SCLN, KC_4,    KC_5,    KC_6,     KC_EQL, _______,
+    _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, K_UNDO,   K_REDO,  KC_TILD, KC_1,    KC_2,    KC_3,    KC_BSLS, _______,
+    _______, _______, _______, _______,                    KC_MINS, KC_0, KC_DOT, _______
 ),
 
 /* NAVIGATION
  * ,-----------------------------------------.                    ,-----------------------------------------.
- * |      |      |  M1  |  M2  |  M3  |      |                    | PgUp | |<<  |  ||  |  >>| | VOLU | TRNS |
+ * |      |      |      |      |      |      |                    | PgUp |      |      |      |      | TRNS |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * |      |      | MWLt | MUp  | MWRt | MWUp |                    | PgDn | TabL |  Up  | TabR | VOLD |      |
+ * |      |      |      |      |      |      |                    | PgDn | TabL |  Up  | TabR |      |      |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * |      |  M1  | MLft | MDn  | MRgt | MWDn |-------.    ,-------| LineB| Left | Down | Rght | LineE|      |
- * |------+------+------+------+------+------|       |    | LLOCK |------+------+------+------+------+------|
- * |      |  ⌘   |  ⌥   |  ⇧   |   ^  |      |-------|    |-------|      | WordL|      | WordR|  ^←  |  ^→  |
- * `-----------------------------------------/      /      \      \-----------------------------------------'
- *                   |     |      |      |  / TRNS /        \LLOCK \  |      |      |      |
- *                   |TRNS | TRNS | TRNS | /      /          \      \ | TRNS | TRNS | TRNS |
- *                   `-------------------''------'            '------''--------------------'
+ * |      |  ⌘   |  ⌥   |  ⇧   |   ^  |      |-------.    ,-------| LineB| Left | Down | Rght | LineE|      |
+ * |------+------+------+------+------+------|  TRNS |    | TRNS  |------+------+------+------+------+------|
+ * |      |      |      |      |      |      |-------|    |-------|      | WordL|      | WordR|  ^←  |  ^→  |
+ * `-----------------------------------------/       /     \      \-----------------------------------------'
+ *                   |      |      |      | / TRNS /       \ TRNS \  |      |      |      |
+ *                   | TRNS | TRNS | TRNS |/       /         \      \ | TRNS | TRNS | TRNS |
+ *                   `----------------------------'           '------''--------------------'
  */
 
 [_NAV] = LAYOUT(
-    _______, XXXXXXX, KC_BTN1, KC_BTN2, KC_BTN3, XXXXXXX,                    KC_PGUP, KC_MRWD, KC_MPLY, KC_MFFD,  KC_VOLU, _______,
-    _______, XXXXXXX, KC_WH_L, KC_MS_U, KC_WH_R, KC_WH_U,                    KC_PGDN, WEBTAB_L,KC_UP,   WEBTAB_R, KC_VOLD, XXXXXXX,
-    _______, KC_BTN1, KC_MS_L, KC_MS_D, KC_MS_R, KC_WH_D,                    LN_BEG,  KC_LEFT, KC_DOWN, KC_RGHT,  LN_END,  XXXXXXX,
-    _______, KC_LGUI, KC_LALT, KC_LSFT, KC_LCTL, XXXXXXX,  _______,  LLOCK,  XXXXXXX, WORD_L,  XXXXXXX, WORD_R,   C(KC_LEFT), C(KC_RIGHT),
-                      _______, _______, _______, _______,                    LLOCK, _______, _______, _______
+    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    KC_PGUP, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,
+    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    KC_PGDN,WEBTAB_L, KC_UP,  WEBTAB_R, XXXXXXX, XXXXXXX,
+    XXXXXXX, KC_LGUI, KC_LALT, KC_LSFT, KC_LCTL, XXXXXXX,                     LN_BEG, KC_LEFT, KC_DOWN, KC_RGHT,  LN_END, XXXXXXX,
+    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  _______,  _______,XXXXXXX,  WORD_L,  XXXXXXX, WORD_R, C(KC_LEFT), C(KC_RIGHT),
+                      _______, _______, _______, _______,                    _______, _______, _______, _______
 ),
 
-/* RAISE
- * ,-----------------------------------------.                    ,-----------------------------------------.
- * |  ~   |  F1  |  F2  |  F3  |  F4  |  F5  |                    |  F6  |  F7  |  F8  |  F9  | F10  | LOUT |
- * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * |  `   |   !  |   @  |   #  |   $  |   %  |                    |   ^  |   &  |   *  |   (  |   )  |      |
- * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * |      |  {   |   (  |   )  |  }   |      |-------.    ,-------|      |   "  |   '  |   -  |   _  |      |
- * |------+------+------+------+------+------|  TRNS |    | LOGOUT|------+------+------+------+------+------|
- * |      |  <   |   [  |   ]  |  >   |      |-------|    |-------|      |   !  |      |      |   ?  |      |
- * `-----------------------------------------/      /      \      \-----------------------------------------'
- *                   |     |      |      |  / TRNS /        \ TRNS \  |      |      |      |
- *                   |TRNS | TRNS | TRNS | /      /          \      \ | TRNS | TRNS | TRNS |
- *                   `-------------------''------'            '------''--------------------'
+/* MOUSE - Dedicated mouse layer (matches Corne)
  */
+[_MOUSE] = LAYOUT(
+    _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+    _______, XXXXXXX, XXXXXXX, MS_UP,   XXXXXXX, XXXXXXX,                    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+    _______, XXXXXXX, MS_LEFT, MS_DOWN, MS_RGHT, XXXXXXX,                    XXXXXXX, KC_RCTL, KC_RSFT, KC_RALT, KC_RGUI, XXXXXXX,
+    _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, MS_WHLU, MS_WHLD, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+                      MS_BTN3, MS_BTN2, MS_BTN1, MS_BTN1,                    _______, _______, _______, _______
+),
 
-[_RAISE] = LAYOUT(
-   KC_TILD, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,                      KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  LOGOUT,
-   KC_GRV,  KC_EXLM, KC_AT,   KC_HASH, KC_DLR,  KC_PERC,                    KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, XXXXXXX,
-   _______, KC_LCBR, KC_LPRN, KC_RPRN, KC_RCBR, XXXXXXX,                    XXXXXXX, KC_DQUO, KC_QUOT, KC_MINS, KC_UNDS, XXXXXXX,
-   _______, KC_LT,   KC_LBRC, KC_RBRC, KC_GT, XXXXXXX, _______,  LOGOUT,    XXXXXXX, KC_EXLM, XXXXXXX, XXXXXXX, KC_QUES, XXXXXXX,
-                      _______, _______, _______, _______,                    _______, _______, _______, _______
+/* SYM - Symbol layer (matches Corne)
+ */
+[_SYM] = LAYOUT(
+   KC_TILD, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+    KC_GRV, KC_EXLM,   KC_AT, KC_HASH, KC_DLR,  KC_PERC,                    KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, _______,
+   _______,SMH_LBRC,SMH_LPRN,SMH_RPRN,SMH_RBRC, XXXXXXX,                    KC_TILD, KC_DQUO, KC_QUOT, KC_MINS, KC_UNDS, KC_BSLS,
+   _______, KC_LT,   KC_LCBR, KC_RCBR, KC_GT,   XXXXXXX, _______,  _______, KC_SLSH, KC_EXLM, KC_PIPE, KC_COLN, KC_QUES, KC_GRV,
+                      _______, _______, KC_BSPC, _______,                    _______, _______, _______, _______
+),
+
+/* MEDIA - Dedicated media layer (matches Corne)
+ */
+[_MEDIA] = LAYOUT(
+    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    XXXXXXX, KC_VOLD, KC_MUTE, KC_VOLU, XXXXXXX, XXXXXXX,
+    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    XXXXXXX, KC_MRWD, KC_MPLY, KC_MFFD, XXXXXXX, XXXXXXX,
+    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,  _______, XXXXXXX, KC_BRID, XXXXXXX, KC_BRIU, XXXXXXX, XXXXXXX,
+                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    _______, _______, _______, _______
 ),
 
 /* FUNCTION
@@ -253,10 +277,20 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  */
 
 [_FUNCTION] = LAYOUT(
-    _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,
-    _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    KC_PSCR, KC_F7,   KC_F8,   KC_F9,   KC_F12,  _______,
-    _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    KC_SCRL, KC_F4,   KC_F5,   KC_F6,   KC_F11,  _______,
-    _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______, _______,  KC_PAUS, KC_F1,   KC_F2,   KC_F3,   KC_F10,  _______,
+    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    KC_PSCR, KC_F7,   KC_F8,   KC_F9,   KC_F12,  XXXXXXX,
+    XXXXXXX, KC_LGUI, KC_LALT, KC_LSFT, KC_LCTL, XXXXXXX,                    KC_SCRL, KC_F4,   KC_F5,   KC_F6,   KC_F11,  XXXXXXX,
+    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______, _______,  KC_PAUS, KC_F1,   KC_F2,   KC_F3,   KC_F10,  XXXXXXX,
+                      _______, _______, _______, _______,                    _______, _______, _______, _______
+),
+
+/* SPECIAL - Placeholder layer (matches Corne)
+ */
+[_SPECIAL] = LAYOUT(
+    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______, _______,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
                       _______, _______, _______, _______,                    _______, _______, _______, _______
 ),
 
@@ -276,11 +310,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  */
 
   [_CONF] = LAYOUT(
-    KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,                      CLEAR,   KC_NO,    KC_NO,  KC_NO,   AS_UP,   DT_UP,
-    KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,                      RGB_TOG, RGB_MOD,  RGB_HUI,KC_NO,   AS_DOWN,   DT_DOWN,
-    KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,                      KC_NO,   RGB_RMOD, RGB_HUD,KC_NO,   AS_RPT,   DT_PRNT,
-    KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,  _______,  _______,  KC_NO,   KC_NO,    KC_NO,  KC_NO,   KC_NO,   KC_NO,
-                      _______, _______, _______, _______,                    _______, QWERTY,   COLEMK, _______
+    QK_BOOT,  KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,                    QK_REBOOT,KC_NO,   KC_NO,   KC_NO,   AS_UP,   DT_UP,
+    RM_TOGG, RM_NEXT, RM_HUEU, KC_NO,   KC_NO,   KC_NO,                      RM_TOGG, KC_NO,   KC_NO,   KC_NO,   AS_DOWN, DT_DOWN,
+    KC_NO,   RM_PREV, RM_HUED, KC_NO,   KC_NO,   KC_NO,                      KC_NO,   KC_NO,   KC_NO,   KC_NO,   AS_RPT,  DT_PRNT,
+    KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,  _______,  _______,  KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,
+                      _______, _______, _______, _______,                    _______, QWERTY,  COLEMK,  _______
   )
 };
 // clang-format on
@@ -295,10 +329,33 @@ void keyboard_pre_init_user(void) {
     writePinHigh(24);
 }
 
+/* Split keyboard Caps Word state sync
+ * The master sends its Caps Word state to the slave so both halves
+ * can show the breathing red LED indicator.
+ */
+static bool caps_word_state_synced = false;  // Slave-side copy of Caps Word state
+
+void caps_word_sync_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
+    const bool* master_state = (const bool*)in_data;
+    caps_word_state_synced = *master_state;
+}
+
+/* Helper to check Caps Word state on either half */
+static bool is_caps_word_active(void) {
+    if (is_keyboard_master()) {
+        return is_caps_word_on();
+    } else {
+        return caps_word_state_synced;
+    }
+}
+
 /* Standard init with the default layer set here (see definition above)
  */
 void keyboard_post_init_user(void) {
     default_layer_set(1 << DEFAULT_LAYER);
+
+    // Register the split transaction handler for Caps Word sync
+    transaction_register_rpc(USER_SYNC_CAPS_WORD, caps_word_sync_handler);
 
 #ifdef CONSOLE_ENABLE
     // debug_enable=true;
@@ -306,6 +363,24 @@ void keyboard_post_init_user(void) {
     // debug_keyboard=true;
     // debug_mouse=true;
 #endif // CONSOLE_ENABLE
+}
+
+/* Housekeeping task - runs every matrix scan cycle
+ * Used to sync Caps Word state to slave half
+ */
+void housekeeping_task_user(void) {
+    // Only run on master side
+    if (is_keyboard_master()) {
+        static bool last_caps_word_state = false;
+        bool current_state = is_caps_word_on();
+
+        // Only sync when state changes to reduce traffic
+        if (current_state != last_caps_word_state) {
+            if (transaction_rpc_send(USER_SYNC_CAPS_WORD, sizeof(current_state), &current_state)) {
+                last_caps_word_state = current_state;
+            }
+        }
+    }
 }
 
 /* This is needed to handle retro shift for the tap-hold mods on the home (or lower) row
@@ -320,6 +395,9 @@ void keyboard_post_init_user(void) {
  * Note the default function calls this one and can be found here: https://docs.qmk.fm/features/auto_shift#auto-shift-per-key
  */
 bool get_custom_auto_shifted_key(uint16_t keycode, keyrecord_t *record) {
+    // Disable auto-shift during Caps Word to prevent conflicts
+    if (is_caps_word_on()) return false;
+
     // Is this a tap and hold mod that wasn't used?
     if (IS_RETRO(keycode)) return true;
 
@@ -354,10 +432,44 @@ void caps_word_set_user(bool active) {
     _update_led_state();
 }
 
+/* Caps Word customization
+ * Space -> underscore is handled in process_record_user
+ * This handles letters, numbers, and mod-tap keys (for home row mods)
+ */
+bool caps_word_press_user(uint16_t keycode) {
+    // Extract the base keycode for mod-tap and layer-tap keys
+    switch (keycode) {
+        case QK_MOD_TAP ... QK_MOD_TAP_MAX:
+        case QK_LAYER_TAP ... QK_LAYER_TAP_MAX:
+            // Get the tap keycode (lower 8 bits)
+            keycode = keycode & 0xFF;
+            break;
+    }
+
+    switch (keycode) {
+        case KC_A ... KC_Z:
+            add_weak_mods(MOD_BIT(KC_LSFT));
+            return true;
+        case KC_1 ... KC_0:
+        case KC_BSPC:
+        case KC_DEL:
+        case KC_MINS:
+        case KC_UNDS:
+            return true;
+        default:
+            return false;
+    }
+}
+
 /* Check if a keycode is a tap-hold mod key */
 static bool _is_tap_hold_mod(uint16_t keycode) {
-    // Check for all the homerow mod keycodes
-    return (keycode == CMH_Z || keycode == CMH_X || keycode == CMH_C || keycode == CMH_D || keycode == CMH_SLSH || keycode == CMH_DOT || keycode == CMH_COMM || keycode == CMH_H || keycode == QMH_Z || keycode == QMH_X || keycode == QMH_C || keycode == QMH_V || keycode == QMH_M || keycode == QMH_N || keycode == QMH_COMM || keycode == QMH_DOT);
+    // Check for all the home row mod keycodes (actual home row - matches Corne)
+    // Colemak: ARST (left), NEIO (right)
+    // QWERTY: ASDF (left), JKL; (right)
+    return (keycode == CMH_A || keycode == CMH_R || keycode == CMH_S || keycode == CMH_T ||
+            keycode == CMH_N || keycode == CMH_E || keycode == CMH_I || keycode == CMH_O ||
+            keycode == QMH_A || keycode == QMH_S || keycode == QMH_D || keycode == QMH_F ||
+            keycode == QMH_J || keycode == QMH_K || keycode == QMH_L || keycode == QMH_SCLN);
 }
 
 /* Find or add a mod tracker */
@@ -417,13 +529,55 @@ bool sw_app_active = false;
 bool sw_win_active = false;
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    if (!process_layer_lock(keycode, record, LLOCK)) {
-        return false;
-    }
-
     // Simple swapper calls - enhanced swapper allows shift to be held
     update_swapper(&sw_app_active, KC_LGUI, KC_TAB, SW_APP, keycode, record);
     update_swapper(&sw_win_active, KC_LGUI, KC_GRV, SW_WIN, keycode, record);
+
+    // Handle custom mod-tap for parentheses (shifted keys can't use normal mod-tap)
+    switch (keycode) {
+        case SMH_LPRN_KC:
+            if (record->event.pressed) {
+                smh_lprn_timer = timer_read();
+                register_code(KC_LALT);
+            } else {
+                unregister_code(KC_LALT);
+                if (timer_elapsed(smh_lprn_timer) < TAPPING_TERM) {
+                    tap_code16(KC_LPRN);  // Tap: send (
+                }
+            }
+            return false;
+        case SMH_RPRN_KC:
+            if (record->event.pressed) {
+                smh_rprn_timer = timer_read();
+                register_code(KC_LSFT);
+            } else {
+                unregister_code(KC_LSFT);
+                if (timer_elapsed(smh_rprn_timer) < TAPPING_TERM) {
+                    tap_code16(KC_RPRN);  // Tap: send )
+                }
+            }
+            return false;
+    }
+
+    // Handle Caps Word special cases
+    // Must intercept here before the layer-tap/mod-tap resolves
+    if (is_caps_word_on() && record->event.pressed) {
+        // Check for layer-tap keys with space as the tap action
+        if ((keycode >= QK_LAYER_TAP && keycode <= QK_LAYER_TAP_MAX) &&
+            (keycode & 0xFF) == KC_SPC) {
+            tap_code16(KC_UNDS);
+            return false;  // Don't process the layer-tap
+        }
+
+        // Disable home row mods during Caps Word - send the letter directly
+        if (keycode >= QK_MOD_TAP && keycode <= QK_MOD_TAP_MAX) {
+            uint8_t base_keycode = keycode & 0xFF;
+            if (base_keycode >= KC_A && base_keycode <= KC_Z) {
+                tap_code16(S(base_keycode));  // Send shifted letter
+                return false;  // Don't process the mod-tap
+            }
+        }
+    }
 
     // Track tap-hold mod keys for LED flashing
     if (_is_tap_hold_mod(keycode)) {
@@ -557,8 +711,20 @@ static layer_color_config_t _get_layer_color_config(uint8_t layer) {
             config.default_color   = (HSV){HSV_RED};
             config.highlight_count = 0;
             break;
-        case _RAISE:
+        case _SYM:
             config.default_color   = (HSV){HSV_PURPLE};
+            config.highlight_count = 0;
+            break;
+        case _MOUSE:
+            config.default_color   = (HSV){HSV_GREEN};
+            config.highlight_count = 0;
+            break;
+        case _MEDIA:
+            config.default_color   = (HSV){HSV_ORANGE};
+            config.highlight_count = 0;
+            break;
+        case _SPECIAL:
+            config.default_color   = (HSV){HSV_OFF};
             config.highlight_count = 0;
             break;
         default:
@@ -590,19 +756,50 @@ static HSV _get_keycode_color(uint8_t layer, uint16_t keycode) {
  * NOTE: Any changes to this function must be flashed to both halves.
  */
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+    /* Caps Word indicator: breathing red effect on all LEDs */
+    if (is_caps_word_active()) {
+        // Create a breathing effect using a triangle wave
+        // timer_read() returns ms, we want a ~2 second cycle
+        uint16_t time = timer_read();
+        uint8_t phase = (time / 8) % 256;  // 8ms per step, ~2 sec full cycle
+
+        // Triangle wave: ramp up 0-127, ramp down 128-255
+        uint8_t triangle;
+        if (phase < 128) {
+            triangle = phase * 2;  // 0 -> 254
+        } else {
+            triangle = (255 - phase) * 2;  // 254 -> 0
+        }
+
+        // Scale to range 80-255 (avoid going completely dark)
+        uint8_t val = 80 + (triangle * 175 / 255);
+
+        HSV hsv = {HSV_RED};
+        hsv.v = val;
+        RGB rgb = hsv_to_rgb(hsv);
+
+        for (uint8_t i = led_min; i < led_max; i++) {
+            rgb_matrix_set_color(i, rgb.r, rgb.g, rgb.b);
+        }
+        return false;  // Skip normal layer indicators during Caps Word
+    }
+
     const uint8_t layer = get_highest_layer(layer_state);
 
     /* For typing layers light the whole keyboard, just set the hue and keep the matrix effects */
     if (layer <= _COLEMAK) {
-        for (uint8_t layer = _BASE; layer < _CONF; layer++) {
-            if (default_layer_state & (1 << layer)) {
-                layer_color_config_t config = _get_layer_color_config(layer);
-                rgblight_sethsv(config.default_color.h, config.default_color.s, config.default_color.v);
-            }
+        // Only update RGB when layer actually changes to avoid expensive repeated calls
+        uint8_t default_layer = get_highest_layer(default_layer_state);
+        if (last_rgb_layer != default_layer) {
+            last_rgb_layer = default_layer;
+            layer_color_config_t config = _get_layer_color_config(default_layer);
+            rgblight_sethsv(config.default_color.h, config.default_color.s, config.default_color.v);
         }
 
         /* For special layers use lighting that reflects the keybindings. */
     } else {
+        // Mark as special layer so we update when returning to typing layer
+        last_rgb_layer = 255;
         const RGB off   = hsv_to_rgb((HSV){HSV_OFF});
         uint8_t   layer = get_highest_layer(layer_state);
 
@@ -636,5 +833,13 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 const uint16_t PROGMEM combo_rd_arrow[]   = {KC_RIGHT, KC_DOWN, COMBO_END};
 const uint16_t PROGMEM combo_ld_arrow[]   = {KC_LEFT, KC_DOWN, COMBO_END};
 const uint16_t PROGMEM combo_screenshot[] = {KC_Q, KC_W, KC_F, KC_P, COMBO_END};
+const uint16_t PROGMEM combo_copy[]       = {KC_Z, KC_X, KC_C, COMBO_END};
+const uint16_t PROGMEM combo_paste[]      = {KC_X, KC_C, KC_D, COMBO_END};
 
-combo_t key_combos[] = {COMBO(combo_rd_arrow, KC_RD_ARROW), COMBO(combo_ld_arrow, KC_LD_ARROW), COMBO(combo_screenshot, KC_SCREENSHOT)};
+combo_t key_combos[] = {
+    COMBO(combo_rd_arrow, KC_RD_ARROW),
+    COMBO(combo_ld_arrow, KC_LD_ARROW),
+    COMBO(combo_screenshot, KC_SCREENSHOT),
+    COMBO(combo_copy, G(KC_C)),
+    COMBO(combo_paste, G(KC_V)),
+};

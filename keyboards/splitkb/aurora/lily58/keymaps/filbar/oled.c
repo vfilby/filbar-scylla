@@ -233,22 +233,24 @@ bool oled_task_user(void) {
 
 
     if (is_keyboard_master()) {
-        oled_clear();
+        // Use cursor positioning instead of oled_clear() to reduce I2C traffic
+        oled_set_cursor(0, 0);
+
         // Render modifier status
         fb_render_mod_status_gui_alt(get_mods()|get_oneshot_mods());
         fb_render_mod_status_ctrl_shift(get_mods()|get_oneshot_mods());
 
-        // Show current layer
+        // Show current layer (pad with spaces to overwrite old content)
         fb_render_space();
         uint8_t layer = get_highest_layer(layer_state);
         oled_write_P(layer_names[layer], false);
-        oled_write_P(PSTR("\n"), false);
+        oled_write_P(PSTR("     \n"), false);  // Pad to clear previous text
 
-        // Show default layer
+        // Show default layer (pad with spaces to overwrite old content)
         fb_render_space();
         uint8_t default_layer = get_highest_layer(default_layer_state);
         oled_write_P(layer_names[default_layer], false);
-        oled_write_P(PSTR("\n"), false);
+        oled_write_P(PSTR("     \n"), false);  // Pad to clear previous text
 
     } else {
         render_anim();
