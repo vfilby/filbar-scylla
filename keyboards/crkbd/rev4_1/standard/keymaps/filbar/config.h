@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define QUICK_TAP_TERM 0 /* disable quick tap repeat */
 #define TAPPING_TERM 200
-#define PERMISSIVE_HOLD
+// PERMISSIVE_HOLD removed - conflicts with Achordion bilateral combinations
 
 #define AUTO_SHIFT_TIMEOUT 215
 #define RETRO_SHIFT 500  /* Anything held for more than this will not be shifted */

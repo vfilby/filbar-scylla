@@ -5,6 +5,13 @@
 .DS_Store
 ._*
 
+# Build artifacts
+.cache/
+compile_commands.json
+
+# IDE/Editor settings
+.vscode/
+
 # Firmware files
 *.hex
 *.bin

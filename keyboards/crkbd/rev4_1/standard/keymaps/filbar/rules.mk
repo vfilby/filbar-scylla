@@ -10,3 +10,4 @@ LAYER_LOCK_ENABLE = yes
 CONSOLE_ENABLE = no
 
 SRC += features/swapper.c
+SRC += features/achordion.c

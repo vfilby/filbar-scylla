@@ -26,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "layers.h"
 #include "features/swapper.h"
+#include "features/achordion.h"
 
 enum crkbd_keycodes {
     SW_APP = SAFE_RANGE, // Switch app windows (cmd-tab)
@@ -274,6 +275,8 @@ void suspend_wakeup_init_user(void) {
 }
 
 void housekeeping_task_user(void) {
+    achordion_task();
+
 #ifdef CONSOLE_ENABLE
     static uint32_t last_debug_time = 0;
     static uint32_t housekeeping_count = 0;
@@ -411,6 +414,28 @@ bool get_custom_auto_shifted_key(uint16_t keycode, keyrecord_t *record) {
 bool sw_app_active = false;
 bool sw_win_active = false;
 
+/* Achordion configuration
+ *
+ * Custom bilateral combinations logic:
+ * - GUI (Cmd) can be used with same-hand keys (for shortcuts like Cmd+R, Cmd+Shift+T)
+ * - Alt, Shift, Ctrl require opposite-hand keys (to prevent "ion" → "ø´" errors)
+ */
+bool achordion_chord(uint16_t tap_hold_keycode,
+                     keyrecord_t* tap_hold_record,
+                     uint16_t other_keycode,
+                     keyrecord_t* other_record) {
+    // Extract the modifier from the tap-hold key
+    uint8_t mod = (tap_hold_keycode >> 8) & 0x1F;
+
+    // GUI (Cmd) is allowed with same-hand keys for shortcuts
+    if ((mod & MOD_MASK_GUI) != 0) {
+        return true;  // Always allow GUI combos (same or opposite hand)
+    }
+
+    // For Alt, Shift, Ctrl: require opposite hands
+    return achordion_opposite_hands(tap_hold_record, other_record);
+}
+
 /* Custom mod-tap state for shifted keys (parentheses)
  * These track the press time to determine tap vs hold
  */
@@ -418,6 +443,8 @@ static uint16_t smh_lprn_timer = 0;
 static uint16_t smh_rprn_timer = 0;
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    if (!process_achordion(keycode, record)) { return false; }
+
 #ifdef CONSOLE_ENABLE
     uprintf("key: 0x%04X %s r=%d c=%d\n", keycode, record->event.pressed ? "DN" : "UP",
             record->event.key.row, record->event.key.col);
